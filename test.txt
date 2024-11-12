@@ -1,0 +1,36 @@
+[37mmkdir[0m [90m-p apps/c/helloworld[0m
+    [92;1mBuilding[0m App: helloworld, Arch: aarch64, Platform: aarch64-qemu-virt, App type: c
+[37mcargo build[0m [90m--target aarch64-unknown-none-softfloat --target-dir /home/warth/RuxOS/target --release  -p ruxglibc --features "ruxfeat/log-level-warn ruxfeat/rtc ruxfeat/virtio-9p ruxglibc/paging ruxglibc/alloc ruxglibc/irq ruxglibc/musl ruxglibc/multitask ruxglibc/fs ruxglibc/pipe ruxglibc/poll ruxglibc/signal ruxglibc/fp_simd ruxglibc/fd"[0m
+    [96;1mLinking[0m apps/c/helloworld/helloworld_aarch64-qemu-virt.elf
+[37mrust-lld -flavor gnu[0m [90m-nostdlib -static -no-pie --gc-sections -T/home/warth/RuxOS/modules/ruxhal/linker_aarch64-qemu-virt.lds  target/aarch64-unknown-none-softfloat/release/libruxglibc.a  -o apps/c/helloworld/helloworld_aarch64-qemu-virt.elf[0m
+[37mrust-objcopy --binary-architecture=aarch64[0m [90mapps/c/helloworld/helloworld_aarch64-qemu-virt.elf --strip-all -O binary apps/c/helloworld/helloworld_aarch64-qemu-virt.bin[0m
+    [96;1mRunning[0m on qemu...
+[37mqemu-system-aarch64[0m [90m-m 2G -smp 1 -cpu cortex-a72 -machine virt -kernel apps/c/helloworld/helloworld_aarch64-qemu-virt.bin -append ";/bin/hello;" -device virtio-net-device,netdev=net0 -fsdev local,id=myid,path=apps/c/helloworld/rootfs,security_model=none -device virtio-9p-device,fsdev=myid,mount_tag=rootfs -netdev user,id=net0,hostfwd=tcp::5555-:5555,hostfwd=udp::5555-:5555,hostfwd=tcp::5556-:5556,hostfwd=udp::5556-:5556,hostfwd=tcp::5557-:5557,hostfwd=udp::5557-:5557,hostfwd=tcp::5558-:5558,hostfwd=udp::5558-:5558,hostfwd=tcp::5559-:5559,hostfwd=udp::5559-:5559, -nographic[0m
+
+8888888b.                     .d88888b.   .d8888b.  
+888   Y88b                   d88P" "Y88b d88P  Y88b 
+888    888                   888     888 Y88b.      
+888   d88P 888  888 888  888 888     888  "Y888b.   
+8888888P"  888  888 `Y8bd8P' 888     888     "Y88b. 
+888 T88b   888  888   X88K   888     888       "888 
+888  T88b  Y88b 888 .d8""8b. Y88b. .d88P Y88b  d88P 
+888   T88b  "Y88888 888  888  "Y88888P"   "Y8888P" 
+
+arch = aarch64
+platform = aarch64-qemu-virt
+target = aarch64-unknown-none-softfloat
+smp = 1
+build_mode = release
+log_level = warn
+
+[37m[1731313825.013298 0 axfs_ramfs::dir:55] [31mAlreadyExists sys[m
+[m[37m[1731313825.038811 0:1 ruxtask::task:811] [33mtaskStack drop: ptr=0xffff0000400df000, size=0x80000[m
+[m[37m[1731313825.039541 0:1 ruxruntime::execve:139] [33msys_execve: current_id_name "Task(1, \"main\")", stack top 0xVA:0xffff000040500000, size 0x80000[m
+[m[37m[1731313825.041017 0:1 ruxglibc::trap:26] [31mInvalid syscall id 214[m
+[m[37m[1731313825.063016 0:1 ruxglibc::trap:26] [31mInvalid syscall id 99[m
+[m[37m[1731313825.063236 0:1 ruxglibc::trap:26] [31mInvalid syscall id 293[m
+[m[37m[1731313825.072818 0:1 ruxos_posix_api::imp::getrandom:163] [33mflags are not implemented yet, flags: 1, ignored[m
+[m[37m[1731313825.073874 0:1 ruxglibc::trap:26] [31mInvalid syscall id 214[m
+[mhello world
+[37m[1731313825.077196 0:1 ruxglibc::trap:26] [31mInvalid syscall id 94[m
+[m

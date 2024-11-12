@@ -1,0 +1,1 @@
+ -DRUX_LOG_WARN -nostdinc -fno-builtin -ffreestanding -Wall -isystem/home/warth/RuxOS/ulib/ruxlibc/include -mno-red-zone -mno-sse

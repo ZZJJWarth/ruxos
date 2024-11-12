@@ -80,6 +80,12 @@ ENVS ?=
 # Libc options
 MUSL ?= n
 
+# user env
+
+USER_ROOTFS_PATH ?= $(CURDIR)/user/rootfs
+USER_APP_CC ?= 
+
+
 # App type
 ifeq ($(wildcard $(APP)),)
   $(error Application path "$(APP)" is not valid)
@@ -178,6 +184,8 @@ OUT_ELF := $(OUT_DIR)/$(APP_NAME)_$(PLATFORM_NAME).elf
 OUT_BIN := $(OUT_DIR)/$(APP_NAME)_$(PLATFORM_NAME).bin
 
 PREBUILD := $(CURDIR)/scripts/prebuild/$(ARCH).mk
+
+USER_APP = $(USER_ROOTFS_PATH)/bin/$(APP_NAME)
 
 all: build
 

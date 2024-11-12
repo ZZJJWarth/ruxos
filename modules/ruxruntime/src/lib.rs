@@ -296,7 +296,9 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
         {
             let args_ptr: *mut *mut c_char = argv;
             let first_arg: *mut c_char = *args_ptr;
+            
             execve::cus_execve(first_arg, argv as usize, environ as usize);
+            
         }
     }
 

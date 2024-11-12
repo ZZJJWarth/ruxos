@@ -1,4 +1,4 @@
-app-objs=main.o
+# app-objs=main.o
 
 ARGS = /bin/hello
 ENVS = 
