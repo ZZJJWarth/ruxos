@@ -19,3 +19,5 @@ apps/c/iperf/
 apps/c/wamr/
 apps/c/nginx/
 user
+
+test.txt
