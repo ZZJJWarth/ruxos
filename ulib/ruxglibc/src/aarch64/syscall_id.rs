@@ -99,6 +99,7 @@ pub enum SyscallId {
     GETRLIMIT = 163,
     SETRLIMIT = 164,
     UMASK = 166,
+    GETTIMEOFDAY = 169,
     #[cfg(feature = "multitask")]
     GETPID = 172,
     GETPPID = 173,

@@ -29,7 +29,8 @@ pub fn cus_open(filename: &str, flags: i32, mode: i32) -> i32 {
     let mut options = OpenOptions::new();
     options.read(true);
     options.write(true);
-    let file = ruxfs::fops::File::open(filename, &options).unwrap();
+    let file = ruxfs::fops::File::open(filename, &options).expect(filename);
+
     File::new(file).add_to_fd_table().unwrap()
 }
 
