@@ -3,6 +3,6 @@
 
 int main(int argc, char** argv, char**envp) {
 	// execv(argv[0], argv);
-	printf("hello worl\n");
+	printf("hello wor\n");
 	return 0;
 }

@@ -13,12 +13,11 @@ extern crate axlog;
 extern crate alloc;
 
 mod trap;
-
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "aarch64")]{
         mod aarch64;
         use aarch64::{syscall, syscall_id};
-    } else if #[cfg(target_arch = "x86_64")]{
+     } else if #[cfg(target_arch = "x86_64")]{
         mod x86_64;
         #[cfg(feature = "musl")]
         use x86_64::{syscall, syscall_id};

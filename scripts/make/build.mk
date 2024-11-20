@@ -62,6 +62,6 @@ $(OUT_DIR):
 $(OUT_ELF): _cargo_build
 
 $(OUT_BIN): $(OUT_ELF)
-	$(call run_cmd,$(OBJCOPY),$(OUT_ELF) --strip-all -O binary $@)
+	$(call run_cmd,$(OBJCOPY),$(OUT_ELF) --strip-all -O binary $(CURDIR)/user/kernel/kernel.bin)
 
 .PHONY: _cargo_build

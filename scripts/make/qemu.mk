@@ -30,7 +30,11 @@ qemu_args-aarch64 := \
   -kernel $(OUT_BIN)
 
 qemu_args-y := -m 2G -smp $(SMP) $(qemu_args-$(ARCH)) \
-  -append ";/bin/$(APP_NAME);$(ENVS)"
+  -append ";$(FIRST_EXEC_PATH);$(ENVS)"
+
+qemu_args-$(SERIAL) += \
+  -serial mon:stdio\
+  -serial file:./test.txt
 
 qemu_args-$(BLK) += \
   -device virtio-blk-$(vdev-suffix),drive=disk0 \

@@ -39,21 +39,12 @@ endif
 
 app-objs := $(addprefix $(APP)/,$(app-objs))
 
-
-$(USER_APP): $(APP)/main.c
-	$(USER_APP_CC) $(APP)/main.c -o $(USER_APP)
-
 $(app-objs): build_glibc prebuild
-
-$(APP)/%.o: $(APP)/%.c build_glibc
-	$(call run_cmd,$(CC),$(CFLAGS) $(APP_CFLAGS) -c -o $@ $<)
 
 $(rust_lib): _cargo_build
 
-$(OUT_ELF): $(rust_lib) $(libgcc) $(USER_APP)
+$(OUT_ELF): $(rust_lib) $(libgcc)
 	@printf "    $(CYAN_C)Linking$(END_C) $(OUT_ELF)\n"
-	$(call run_cmd,$(LD),$(LDFLAGS)  $(rust_lib) $(libgcc) -o $@)
-
-$(APP)/axbuild.mk: ;
+	$(call run_cmd,$(LD),$(LDFLAGS)  $(rust_lib) $(libgcc) -o $(CURDIR)/user/kernel/kernel.elf)
 
 .PHONY: build_glibc

@@ -196,6 +196,7 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             #[allow(unreachable_code)]
             #[cfg(not(feature = "multitask"))]
             SyscallId::EXIT => ruxos_posix_api::sys_exit(args[0] as c_int) as _,
+            SyscallId::EXIT_GROUP => ruxos_posix_api::sys_exit(args[0] as c_int) as _,
             #[allow(unreachable_code)]
             #[cfg(feature = "multitask")]
             SyscallId::EXIT => {
