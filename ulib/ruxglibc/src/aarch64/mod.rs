@@ -1,6 +1,6 @@
 pub mod syscall_id;
 
-use core::ffi::{c_char, c_int};
+use core::ffi::{c_char, c_int,c_void,c_long};
 use ruxos_posix_api::ctypes::{self, gid_t, pid_t, uid_t};
 use syscall_id::SyscallId;
 
@@ -57,6 +57,11 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[2] as c_int,
             ) as _,
             #[cfg(feature = "fs")]
+            SyscallId::FTRUNCATE => ruxos_posix_api::sys_ftruncate(
+                args[0] as c_int,
+                args[1] as c_long
+            ) as _,
+            #[cfg(feature = "fs")]
             SyscallId::FCHOWNAT => ruxos_posix_api::sys_fchownat(
                 args[0] as c_int,
                 args[1] as *const core::ffi::c_char,
@@ -87,6 +92,10 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[2] as c_int,
                 args[3] as ctypes::mode_t,
             ) as _,
+            #[cfg(feature = "fs")]
+            SyscallId::FCHMODAT => ruxos_posix_api::sys_fchmodat(args[0] as c_int,args[1] as *mut c_char, args[2] as ctypes::mode_t) as _,
+            #[cfg(feature = "fs")]
+            SyscallId::STATFS => ruxos_posix_api::sys_stat(args[0] as *mut c_char,args[1] as *mut c_void) as _,
             #[cfg(feature = "fd")]
             SyscallId::CLOSE => ruxos_posix_api::sys_close(args[0] as c_int) as _,
             #[cfg(feature = "pipe")]
@@ -196,7 +205,7 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             #[allow(unreachable_code)]
             #[cfg(not(feature = "multitask"))]
             SyscallId::EXIT => ruxos_posix_api::sys_exit(args[0] as c_int) as _,
-            SyscallId::EXIT_GROUP => ruxos_posix_api::sys_exit(args[0] as c_int) as _,
+            SyscallId::EXIT_GROUP => ruxos_posix_api::sys_exit_group(args[0] as c_int) as _,
             #[allow(unreachable_code)]
             #[cfg(feature = "multitask")]
             SyscallId::EXIT => {

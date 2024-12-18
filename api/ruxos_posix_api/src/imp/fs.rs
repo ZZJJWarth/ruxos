@@ -575,4 +575,22 @@
          Ok(0)
      })
  }
+
+
+ /// todo:implement this function
+ pub fn sys_fchmodat(dfd:c_int,filename: *const c_char, mode:ctypes::mode_t)->c_int{
+    warn!("sys_fchmodat are not implemented yet");
+    return 0;
+ }
+
+ pub fn sys_ftruncate(fd:c_int,length:c_long)->c_int{
+    debug!("sys_ftruncate <= fd:{} length: {}",fd,length);
+
+    syscall_body!(sys_ftruncate,
+        let file=File::from_fd(fd)?;
+        let inner=file.inner.write();
+        inner.truncate(length as u64)?;
+        Ok(0)
+    )
+ }
  

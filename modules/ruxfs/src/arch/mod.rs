@@ -39,9 +39,19 @@ pub fn get_meminfo() -> String {
         let totalram = freeram + allocator.used_bytes() as c_ulong;
 
         let mut meminfo = String::new();
-        meminfo.push_str(format!("MemTotal:       {:8}\n", totalram).as_ref());
-        meminfo.push_str(format!("MemFree:        {:8}\n", freeram).as_ref());
-
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","MemTotal:", totalram).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","MemFree:", freeram).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","MemAvailable:", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Buffers:", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Cached:", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","SwapCached:", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Active:", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Inactive:", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Active(anon):", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Inactive(anon):", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Active(file):", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Inactive(file):", 114514).as_ref());
+        meminfo.push_str(format!("{:<15}{:>10} kB\n","Unevictable:", 114514).as_ref());
         meminfo
     }
     #[cfg(not(feature = "alloc"))]

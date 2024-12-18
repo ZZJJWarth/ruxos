@@ -61,6 +61,10 @@ pub(crate) fn procfs() -> VfsResult<Arc<fs::ramfs::RamFileSystem>> {
     let file_over = proc_root.clone().lookup("./sys/vm/overcommit_memory")?;
     file_over.write_at(0, b"0\n")?;
 
+    proc_root.create_recursive("self/oom_score_adj", VfsNodeType::File)?;
+    let file_over = proc_root.clone().lookup("self/oom_score_adj")?;
+    file_over.write_at(0, b"0\n")?;
+    
     // Create /proc/self/stat
     proc_root.create_recursive("self/stat", VfsNodeType::File)?;
 
