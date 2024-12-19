@@ -1682,6 +1682,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ruxglibc"
+version = "0.1.0"
+dependencies = [
+ "axlog",
+ "cfg-if",
+ "crate_interface",
+ "kernel_guard",
+ "num_enum",
+ "ruxfeat",
+ "ruxhal",
+ "ruxos_posix_api",
+]
+
+[[package]]
 name = "ruxhal"
 version = "0.1.0"
 dependencies = [
@@ -1752,16 +1766,6 @@ dependencies = [
 [[package]]
 name = "ruxmusl"
 version = "0.1.0"
-dependencies = [
- "axlog",
- "cfg-if",
- "crate_interface",
- "kernel_guard",
- "num_enum",
- "ruxfeat",
- "ruxhal",
- "ruxos_posix_api",
-]
 
 [[package]]
 name = "ruxnet"
@@ -1858,13 +1862,17 @@ name = "ruxruntime"
 version = "0.1.0"
 dependencies = [
  "axalloc",
+ "axerrno",
  "axlog",
  "axsync",
  "cfg-if",
  "crate_interface",
  "dtb",
+ "elf",
  "kernel_guard",
  "lazy_init",
+ "memory_addr",
+ "page_table",
  "percpu",
  "rux9p",
  "ruxconfig",

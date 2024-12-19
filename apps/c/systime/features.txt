@@ -1,1 +1,12 @@
 rtc
+paging
+alloc 
+irq
+musl
+multitask
+fs
+pipe
+poll
+signal
+virtio-9p
+fp_simd

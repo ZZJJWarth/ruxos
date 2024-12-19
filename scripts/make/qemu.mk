@@ -30,7 +30,11 @@ qemu_args-aarch64 := \
   -kernel $(OUT_BIN)
 
 qemu_args-y := -m 2G -smp $(SMP) $(qemu_args-$(ARCH)) \
-  -append ";$(ARGS);$(ENVS)"
+  -append ";$(FIRST_EXEC_PATH);$(ENVS)"
+
+qemu_args-$(SERIAL) += \
+  -serial mon:stdio\
+  -serial file:./test.txt
 
 qemu_args-$(BLK) += \
   -device virtio-blk-$(vdev-suffix),drive=disk0 \
@@ -40,7 +44,7 @@ qemu_args-$(NET) += \
   -device virtio-net-$(vdev-suffix),netdev=net0
 
 qemu_args-$(V9P) += \
-  -fsdev local,id=myid,path=${V9P_PATH},security_model=none \
+  -fsdev local,id=myid,path=${CURDIR}/user/rootfs,security_model=none \
   -device virtio-9p-$(vdev-suffix),fsdev=myid,mount_tag=rootfs
 
 ifeq ($(NET_DEV), user)
