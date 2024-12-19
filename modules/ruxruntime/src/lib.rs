@@ -43,8 +43,6 @@ pub mod execve;
 
 #[cfg(all(target_os = "none", not(test)))]
 mod lang_items;
-#[cfg(feature = "signal")]
-mod signal;
 
 #[cfg(not(feature = "musl"))]
 mod trap;
@@ -56,7 +54,7 @@ mod mp;
 pub use self::mp::rust_main_secondary;
 
 #[cfg(feature = "signal")]
-pub use self::signal::{rx_sigaction, Signal};
+use ruxtask::signal::{rx_sigaction, Signal};
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -572,8 +570,8 @@ fn init_interrupt() {
             if signal & (1 << signum) != 0
             /* TODO: && support mask */
             {
-                Signal::sigaction(signum as u8, None, None);
                 Signal::signal(signum as i8, false);
+                Signal::sigaction(signum as u8, None, None);
             }
         }
     }

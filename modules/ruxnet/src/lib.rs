@@ -37,6 +37,9 @@
 extern crate log;
 extern crate alloc;
 
+mod unix;
+pub use unix::{SocketAddrUnix, UnixSocket, UnixSocketType};
+
 cfg_if::cfg_if! {
     if #[cfg(feature = "lwip")] {
         mod lwip_impl;
@@ -63,8 +66,6 @@ use ruxdriver::{prelude::*, AxDeviceContainer};
 pub fn init_network(mut net_devs: AxDeviceContainer<AxNetDevice>) {
     info!("Initialize network subsystem...");
 
-    let dev = net_devs.take_one().expect("No NIC device found!");
-    info!("  use NIC 0: {:?}", dev.device_name());
     cfg_if::cfg_if! {
         if #[cfg(feature = "lwip")] {
             info!("  net stack: lwip");
@@ -74,5 +75,11 @@ pub fn init_network(mut net_devs: AxDeviceContainer<AxNetDevice>) {
             compile_error!("No network stack is selected");
         }
     }
-    net_impl::init(dev);
+    net_impl::init();
+    unix::init_unix();
+    while !net_devs.is_empty() {
+        let dev = net_devs.take_one().expect("No NIC device found!");
+        info!("  use NIC: {:?}", dev.device_name());
+        net_impl::init_netdev(dev);
+    }
 }
