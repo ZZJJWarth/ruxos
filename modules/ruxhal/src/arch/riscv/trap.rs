@@ -44,11 +44,13 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
             );
             tf.regs.a0 = ret as _;
         },
+        #[cfg(feature = "paging")]
         Trap::Exception(E::LoadPageFault) =>{
             let vaddr =riscv::register::stval::read();
             crate::trap::handle_page_fault(vaddr,crate::trap::PageFaultCause::READ);
 
         },
+        #[cfg(feature = "paging")]
         Trap::Exception(E::StorePageFault)=>{
             let vaddr =riscv::register::stval::read();
             crate::trap::handle_page_fault(vaddr,crate::trap::PageFaultCause::WRITE);
