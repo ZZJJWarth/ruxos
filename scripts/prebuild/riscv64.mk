@@ -1,7 +1,7 @@
 # non-musl riscv64 still needs a usable bios
 # instead of the non-funtioning default one
 define run_prebuild
-#   git submodule update --init --recursive --remote patches/opensbi
+  git submodule update --init --recursive --remote patches/opensbi
 endef
 
 RISCV_BIOS := $(CURDIR)/patches/opensbi/build/platform/generic/firmware/fw_dynamic.bin
