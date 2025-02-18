@@ -43,7 +43,18 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
                 ],
             );
             tf.regs.a0 = ret as _;
+        },
+        Trap::Exception(E::LoadPageFault) =>{
+            let vaddr =riscv::register::stval::read();
+            crate::trap::handle_page_fault(vaddr,crate::trap::PageFaultCause::READ);
+
+        },
+        Trap::Exception(E::StorePageFault)=>{
+            let vaddr =riscv::register::stval::read();
+            crate::trap::handle_page_fault(vaddr,crate::trap::PageFaultCause::WRITE);
+
         }
+
         _ => {
             panic!(
                 "Unhandled trap {:?} @ {:#x}:\n{:#x?}",
