@@ -167,6 +167,17 @@ fn set_sp_and_jmp(sp: usize, entry: usize) -> ! {
         in(reg)entry,
         );
     }
+    #[cfg(target_arch = "riscv64")]
+    unsafe {
+        core::arch::asm!(
+            "
+             mv sp, {0}
+             jalr {1}
+            ",
+            in(reg) sp,
+            in(reg) entry,
+        );
+    }
     unreachable!("sys_execve: unknown arch, sp 0x{sp:x}, entry 0x{entry:x}");
 }
 

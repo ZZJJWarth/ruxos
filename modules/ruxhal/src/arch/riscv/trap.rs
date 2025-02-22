@@ -54,7 +54,11 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
             let vaddr = riscv::register::stval::read();
             crate::trap::handle_page_fault(vaddr, crate::trap::PageFaultCause::WRITE);
         }
-
+        #[cfg(feature = "paging")]
+        Trap::Exception(E::InstructionPageFault) => {
+            let vaddr = riscv::register::stval::read();
+            crate::trap::handle_page_fault(vaddr, crate::trap::PageFaultCause::INSTRUCTION);
+        }
         _ => {
             panic!(
                 "Unhandled trap {:?} @ {:#x}:\n{:#x?}",
