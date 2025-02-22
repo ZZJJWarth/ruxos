@@ -345,9 +345,9 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             ) as _,
             #[cfg(feature = "fs")]
             SyscallId::EXECVE => ruxos_posix_api::sys_execve(
-                args[0] as *const core::ffi::c_char, 
-                args[1] as usize, 
-                args[2] as usize
+                args[0] as *const core::ffi::c_char,
+                args[1] as usize,
+                args[2] as usize,
             ) as _,
             #[cfg(feature = "alloc")]
             SyscallId::MMAP => ruxos_posix_api::sys_mmap(
