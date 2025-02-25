@@ -9,7 +9,7 @@ homepage = "https://github.com/syswonder/ruxos"
 repository = "https://github.com/syswonder/ruxos/tree/main/modules/ruxtask"
 
 [features]
-default = ["fs"]
+default = ["fs","multitask","musl"]
 
 multitask = [
     "dep:ruxconfig",

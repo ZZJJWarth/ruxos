@@ -344,6 +344,7 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[4] as *mut ctypes::pid_t,
             ) as _,
             #[cfg(feature = "fs")]
+            #[allow(unreachable_code)]
             SyscallId::EXECVE => ruxos_posix_api::sys_execve(
                 args[0] as *const core::ffi::c_char,
                 args[1] as usize,

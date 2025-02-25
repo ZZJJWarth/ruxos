@@ -44,12 +44,12 @@ use crate::{AxRunQueue, AxTask, AxTaskRef, WaitQueue};
 
 /// A unique identifier for a thread.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub struct TaskId(u64);
+pub struct TaskId(u64);             // 这个是任务的id
 
 /// The possible states of a task.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum TaskState {
+pub enum TaskState {                //任务的状态
     /// Task is running on cpu
     Running = 1,
     /// Task is ready for schedule
@@ -61,16 +61,23 @@ pub enum TaskState {
 }
 
 /// The inner task structure.
-pub struct TaskInner {
+pub struct TaskInner {              // 任务的数据结构
     parent_process: Option<Weak<AxTask>>,
     process_task: Weak<AxTask>,
+    // 有ID
     id: TaskId,
+    // 有名字
     name: String,
+    // 是否空闲
     is_idle: bool,
+    // 是否初始化
     is_init: bool,
+    // 入口
     entry: Option<*mut dyn FnOnce()>,
+    // 状态？为什么不用TaskState
     state: AtomicU8,
 
+    //是否在等待队列中？
     in_wait_queue: AtomicBool,
     #[cfg(feature = "irq")]
     in_timer_list: AtomicBool,
@@ -80,10 +87,13 @@ pub struct TaskInner {
     #[cfg(feature = "preempt")]
     preempt_disable_count: AtomicUsize,
 
+    // 退出代码
     exit_code: AtomicI32,
+    // 等待队列？？
     wait_for_exit: WaitQueue,
-
+    // 栈map地址
     stack_map_addr: SpinNoIrq<VirtAddr>,
+    // kstack数据结构
     kstack: SpinNoIrq<Arc<Option<TaskStack>>>,
     ctx: UnsafeCell<TaskContext>,
 
@@ -115,17 +125,18 @@ pub struct TaskInner {
 }
 
 impl TaskId {
-    fn new() -> Self {
+    fn new() -> Self {      // TaskId在生成时就是直接通过一个静态变量生成，这个静态变量会加一个锁
         static ID_COUNTER: AtomicU64 = AtomicU64::new(1);
         Self(ID_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
     /// Convert the task ID to a `u64`.
-    pub const fn as_u64(&self) -> u64 {
+    pub const fn as_u64(&self) -> u64 {     // 我们可以获取TaskId u64形式
         self.0
     }
 }
 
+// taskState是可以由u8提供的
 impl From<u8> for TaskState {
     #[inline]
     fn from(state: u8) -> Self {
@@ -144,6 +155,7 @@ unsafe impl Sync for TaskInner {}
 
 impl TaskInner {
     /// Gets the ID of the task.
+    /// 获取TaskId
     pub const fn id(&self) -> TaskId {
         self.id
     }
@@ -198,7 +210,7 @@ impl TaskInner {
     /// Wait for the task to exit, and return the exit code.
     ///
     /// It will return immediately if the task has already exited (but not dropped).
-    pub fn join(&self) -> Option<i32> {
+    pub fn join(&self) -> Option<i32> {     // 等待，直到任务退出
         self.wait_for_exit
             .wait_until(|| self.state() == TaskState::Exited);
         Some(self.exit_code.load(Ordering::Acquire))
@@ -217,7 +229,7 @@ impl TaskInner {
 
 /// map task id into task.
 pub static PROCESS_MAP: SpinNoIrq<BTreeMap<u64, Arc<AxTask>>> = SpinNoIrq::new(BTreeMap::new());
-
+// 这玩意定义了从task id 到task的映射
 // private methods
 impl TaskInner {
     // clone a thread
@@ -228,14 +240,23 @@ impl TaskInner {
             id.0
         );
         Self {
+            //认为当前的task就是新task的父节点
             parent_process: Some(Arc::downgrade(current().as_task_ref())),
+            //处理的task就是当前的task
             process_task: Arc::downgrade(&current().process_task()),
+            //id是输入的id
             id,
+            //name是输入的name
             name,
+            //一开始不认为是idle的
             is_idle: false,
+            //一开始没有初始化
             is_init: false,
+            //一开始没有定义入口
             entry: None,
+            //一开始是就绪态
             state: AtomicU8::new(TaskState::Ready as u8),
+            //没在等待队列
             in_wait_queue: AtomicBool::new(false),
             #[cfg(feature = "irq")]
             in_timer_list: AtomicBool::new(false),
@@ -243,10 +264,15 @@ impl TaskInner {
             need_resched: AtomicBool::new(false),
             #[cfg(feature = "preempt")]
             preempt_disable_count: AtomicUsize::new(0),
+            //初始退出代码是0
             exit_code: AtomicI32::new(0),
+            //这个是新的WaitQueue
             wait_for_exit: WaitQueue::new(),
+            //栈表还没有设置
             stack_map_addr: SpinNoIrq::new(VirtAddr::from(0)), // should be set later
+            // kstack也没有设置
             kstack: SpinNoIrq::new(Arc::new(None)),
+            //ctx就是新的
             ctx: UnsafeCell::new(TaskContext::new()),
             #[cfg(feature = "tls")]
             tls: TlsArea::alloc(),
@@ -315,11 +341,13 @@ impl TaskInner {
 
     /// Create a new idle task.
     pub fn stack_top(&self) -> VirtAddr {
+        // 其实就是获取kstack的顶部
         self.kstack.lock().as_ref().as_ref().unwrap().top()
     }
 
     /// Set the stack top and size for the task.
     pub fn set_stack_top(&self, begin: usize, size: usize) {
+        //本函数允许你自己修改stack的区域
         debug!("set_stack_top: begin={:#x}, size={:#x}", begin, size);
         *self.stack_map_addr.lock() = VirtAddr::from(begin);
         *self.kstack.lock() = Arc::new(Some(TaskStack {
@@ -369,6 +397,7 @@ impl TaskInner {
     where
         F: FnOnce() + Send + 'static,
     {
+        // 该函数就是task生成函数了，你可以给出一个task的入口（一般来说是一个函数），还有名字，栈大小等，我们会为你完成接下来的工作
         let mut t = Self::new_common(TaskId::new(), name);
         debug!("new task: {}", t.id_name());
         let kstack = TaskStack::alloc(align_up_4k(stack_size));
@@ -851,7 +880,7 @@ impl fmt::Debug for TaskInner {
 #[derive(Debug)]
 /// A wrapper of TaskStack to provide a safe interface for allocating and
 /// deallocating task stacks.
-pub struct TaskStack {
+pub struct TaskStack {  // 那么这个taskstack其实就是一块raw的内存，它存放着一个初始地址对齐的size大小的内存，并没有别的特殊结构，它能告诉你大小、上下界，但是没有别的特殊逻辑
     ptr: NonNull<u8>,
     layout: Layout,
 }
