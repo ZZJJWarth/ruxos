@@ -35,14 +35,19 @@ pub(crate) struct AxRunQueue {
 }
 
 impl AxRunQueue {
+    // 本函数制造一个上锁的AxRunQueue
     pub fn new() -> SpinNoIrq<Self> {
+        // 首先生成一个gctask
         let gc_task = TaskInner::new(gc_entry, "gc".into(), ruxconfig::TASK_STACK_SIZE);
+        // 加入一个fifo调度器
         let mut scheduler = Scheduler::new();
+        // 把gctask塞入调度器中就结束了
         scheduler.add_task(gc_task);
         SpinNoIrq::new(Self { scheduler })
     }
 
     pub fn add_task(&mut self, task: AxTaskRef) {
+        // 加一个任务只会对任务是否就绪进行检查
         debug!("task spawn: {}", task.id_name());
         assert!(task.is_ready());
         self.scheduler.add_task(task);
@@ -60,6 +65,7 @@ impl AxRunQueue {
     }
 
     pub fn yield_current(&mut self) {
+        // 放弃一个任务只需要调用reseched？当然也要做一个curr的检查
         let curr = crate::current();
         trace!("task yield: {}", curr.id_name());
         assert!(curr.is_running());
@@ -67,6 +73,7 @@ impl AxRunQueue {
     }
 
     pub fn set_current_priority(&mut self, prio: isize) -> bool {
+        // priority不了解
         self.scheduler
             .set_priority(crate::current().as_task_ref(), prio)
     }
@@ -96,6 +103,7 @@ impl AxRunQueue {
     }
 
     pub fn exit_current(&mut self, exit_code: i32) -> ! {
+        // 似乎是把当前的任务退出掉
         let curr = crate::current();
         debug!("task exit: {}, exit_code={}", curr.id_name(), exit_code);
         assert!(curr.is_running());
@@ -114,6 +122,7 @@ impl AxRunQueue {
         unreachable!("task exited!");
     }
 
+    // 似乎是把当前的任务挂起
     pub fn block_current<F>(&mut self, wait_queue_push: F)
     where
         F: FnOnce(AxTaskRef),
@@ -133,6 +142,7 @@ impl AxRunQueue {
         self.resched(false);
     }
 
+    // 取消某个任务的挂起
     pub fn unblock_task(&mut self, task: AxTaskRef, resched: bool) {
         debug!("task unblock: {}", task.id_name());
         if task.is_blocked() {
@@ -165,7 +175,10 @@ impl AxRunQueue {
     /// Common reschedule subroutine. If `preempt`, keep current task's time
     /// slice, otherwise reset it.
     fn resched(&mut self, preempt: bool) {
+        // 这个重调度函数似乎非常重要，是调度的主要执行者
+        // 获取当前的task
         let prev = crate::current();
+        // 如果当前任务正在执行，那么就修改当前任务的状态为就绪态，并且把它放到队尾
         if prev.is_running() {
             prev.set_state(TaskState::Ready);
             if !prev.is_idle() {
@@ -173,11 +186,12 @@ impl AxRunQueue {
                     .put_prev_task(prev.clone_as_taskref(), preempt);
             }
         }
+        // 获取队前的一个task
         let next = self.scheduler.pick_next_task().unwrap_or_else(|| unsafe {
             // Safety: IRQs must be disabled at this time.
             IDLE_TASK.current_ref_raw().get_unchecked().clone()
         });
-
+        // 使用switch to进行转化，看来是switchto函数负责具体的任务转换
         self.switch_to(prev, next);
     }
 
@@ -218,6 +232,7 @@ impl AxRunQueue {
 
     #[cfg(not(target_arch = "aarch64"))]
     fn switch_to(&mut self, prev_task: CurrentTask, next_task: AxTaskRef) {
+        // 首先进行一个task的console输出
         trace!(
             "context switch: {} -> {}",
             prev_task.id_name(),
@@ -225,12 +240,15 @@ impl AxRunQueue {
         );
         #[cfg(feature = "preempt")]
         next_task.set_preempt_pending(false);
+        // 设置下一个任务为运行中
         next_task.set_state(TaskState::Running);
+        // 如果两个任务是同一个任务，那么不需要做什么事情
         if prev_task.ptr_eq(&next_task) {
             return;
         }
 
         unsafe {
+            // 获取各自的ctx指针
             let prev_ctx_ptr = prev_task.ctx_mut_ptr();
             let next_ctx_ptr = next_task.ctx_mut_ptr();
 
@@ -238,8 +256,9 @@ impl AxRunQueue {
             // but won't be dropped until `gc_entry()` is called.
             assert!(Arc::strong_count(prev_task.as_task_ref()) > 1);
             assert!(Arc::strong_count(&next_task) >= 1);
-
+            // 对CurrentTask对象进行更新
             CurrentTask::set_current(prev_task, next_task);
+            // 看来这里做了真正的转换，而且这个是架构相关的，总的来说就是上下文switch
             (*prev_ctx_ptr).switch_to(&*next_ctx_ptr);
         }
     }
