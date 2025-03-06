@@ -157,7 +157,7 @@ export RUX_GW=$(GW)
 export RUX_9P_ADDR = $(NET_9P_ADDR)
 export RUX_ANAME_9P = $(ANAME_9P)
 export RUX_PROTOCOL_9P = $(PROTOCOL_9P)
-export RUX_MUSL=$(MUSL)
+
 
 # Binutils
 CROSS_COMPILE ?= $(ARCH)-linux-musl-

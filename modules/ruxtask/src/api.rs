@@ -69,6 +69,7 @@ pub fn current_may_uninit() -> Option<CurrentTask> {
 /// Panics if the current task is not initialized.
 #[inline(never)]
 pub fn current() -> CurrentTask {
+    // debug!("get current!!!!!!!!!!----------------");
     CurrentTask::get()
 }
 

@@ -32,7 +32,7 @@ fn compiler_error(err: Error) -> TokenStream {
 /// It should be used on a `static` variable.
 ///
 /// See the [crate-level documentation](../percpu/index.html) for more details.
-#[proc_macro_attribute]
+#[proc_macro_attribute]         
 pub fn def_percpu(attr: TokenStream, item: TokenStream) -> TokenStream {
     if !attr.is_empty() {
         return compiler_error(Error::new(

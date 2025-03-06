@@ -289,10 +289,10 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
     unsafe {
         let mut argc: c_int = 0;
         init_cmdline(&mut argc);
-        #[cfg(not(feature = "musl"))]
+        // #[cfg(not(feature = "musl"))]
         main(argc, argv);
-        #[cfg(feature = "musl")]
-        __libc_start_main(main, argc, argv, init_dummy, fini_dummy, ldso_dummy);
+        // #[cfg(feature = "musl")]
+        // __libc_start_main(main, argc, argv, init_dummy, fini_dummy, ldso_dummy);
     }
 
     #[cfg(not(feature = "alloc"))]

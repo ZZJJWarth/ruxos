@@ -60,6 +60,9 @@ pub enum TaskState {                //任务的状态
     Exited = 4,
 }
 
+extern "C"{
+    fn pan();
+}
 /// The inner task structure.
 pub struct TaskInner {              // 任务的数据结构
     parent_process: Option<Weak<AxTask>>,
@@ -918,11 +921,13 @@ impl Drop for TaskStack {
 }
 
 /// A wrapper of [`AxTaskRef`] as the current task.
+#[derive(Debug)]
 pub struct CurrentTask(ManuallyDrop<AxTaskRef>);
 
 impl CurrentTask {
     pub(crate) fn try_get() -> Option<Self> {
         let ptr: *const super::AxTask = ruxhal::cpu::current_task_ptr();
+        // unsafe {debug!("we find a AxTask:{:?}",*ptr);}
         if !ptr.is_null() {
             Some(Self(unsafe { ManuallyDrop::new(AxTaskRef::from_raw(ptr)) }))
         } else {
@@ -931,7 +936,15 @@ impl CurrentTask {
     }
 
     pub(crate) fn get() -> Self {
-        Self::try_get().expect("current task is uninitialized")
+        match Self::try_get(){
+            Some(ans)=>{ans},
+            None=>{
+                unsafe {
+                    pan();
+                }
+                panic!();
+            }
+        }
     }
 
     /// Converts [`CurrentTask`] to [`AxTaskRef`].
