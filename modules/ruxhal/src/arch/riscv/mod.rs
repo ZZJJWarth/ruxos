@@ -12,7 +12,7 @@ mod macros;
 
 mod context;
 mod trap;
-
+mod gp;
 use memory_addr::{PhysAddr, VirtAddr};
 use riscv::asm;
 use riscv::register::{satp, sstatus, stvec};
@@ -115,4 +115,9 @@ pub fn read_thread_pointer() -> usize {
 #[inline]
 pub unsafe fn write_thread_pointer(tp: usize) {
     core::arch::asm!("mv tp, {}", in(reg) tp)
+}
+
+#[inline]
+pub fn save_kernel_gp(){
+    crate::arch::riscv::gp::store_kernel_gp();
 }
