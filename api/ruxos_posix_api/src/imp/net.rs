@@ -9,18 +9,18 @@
 
 use alloc::{sync::Arc, vec, vec::Vec};
 use core::ffi::{c_char, c_int, c_void};
+use core::iter;
 use core::mem::size_of;
 use core::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4};
-use ruxfs::{fops, AbsPath};
+use ruxfs::AbsPath;
 
 use axerrno::{LinuxError, LinuxResult};
 use axio::PollState;
 use axsync::Mutex;
-use ruxfdtable::{FileLike, RuxStat};
+use ruxfdtable::{FileLike, OpenFlags, RuxStat};
 use ruxnet::{SocketAddrUnix, TcpSocket, UdpSocket, UnixSocket, UnixSocketType};
 
 use crate::ctypes;
-use crate::imp::fs::flags_to_options;
 use crate::utils::char_ptr_to_str;
 
 fn addrun_convert(addr: *const ctypes::sockaddr_un) -> SocketAddrUnix {
@@ -62,7 +62,7 @@ pub enum Socket {
 }
 
 impl Socket {
-    fn add_to_fd_table(self, flags: fops::OpenOptions) -> LinuxResult<c_int> {
+    fn add_to_fd_table(self, flags: OpenFlags) -> LinuxResult<c_int> {
         ruxtask::fs::add_file_like(Arc::new(self), flags)
     }
 
@@ -97,11 +97,13 @@ impl Socket {
         }
     }
 
-    fn local_addr(&self) -> LinuxResult<SocketAddr> {
+    fn local_addr(&self) -> LinuxResult<UnifiedSocketAddress> {
         match self {
-            Socket::Udp(udpsocket) => Ok(udpsocket.lock().local_addr()?),
-            Socket::Tcp(tcpsocket) => Ok(tcpsocket.lock().local_addr()?),
-            Socket::Unix(_) => Err(LinuxError::EOPNOTSUPP),
+            Socket::Udp(udpsocket) => Ok(UnifiedSocketAddress::Net(udpsocket.lock().local_addr()?)),
+            Socket::Tcp(tcpsocket) => Ok(UnifiedSocketAddress::Net(tcpsocket.lock().local_addr()?)),
+            Socket::Unix(unixsocket) => {
+                Ok(UnifiedSocketAddress::Unix(unixsocket.lock().local_addr()?))
+            }
         }
     }
 
@@ -305,7 +307,8 @@ impl FileLike for Socket {
         self.poll()
     }
 
-    fn set_nonblocking(&self, nonblock: bool) -> LinuxResult {
+    fn set_flags(&self, flags: OpenFlags) -> LinuxResult {
+        let nonblock = flags.contains(OpenFlags::O_NONBLOCK);
         match self {
             Socket::Udp(udpsocket) => udpsocket.lock().set_nonblocking(nonblock),
             Socket::Tcp(tcpsocket) => tcpsocket.lock().set_nonblocking(nonblock),
@@ -348,15 +351,54 @@ impl From<ctypes::sockaddr_in> for SocketAddrV4 {
     }
 }
 
-fn un_into_sockaddr(addr: SocketAddrUnix) -> (ctypes::sockaddr, ctypes::socklen_t) {
-    debug!("convert unixsocket address {:?} into ctypes sockaddr", addr);
-    (
-        unsafe { *(&ctypes::sockaddr_un::from(addr) as *const _ as *const ctypes::sockaddr) },
-        size_of::<ctypes::sockaddr>() as _,
-    )
+fn unified_into_sockaddr(addr: UnifiedSocketAddress) -> (Vec<u8>, ctypes::socklen_t) {
+    match addr {
+        UnifiedSocketAddress::Net(addr) => {
+            let (sockaddr, len) = in_into_sockaddr(addr);
+            let bytes = unsafe {
+                core::slice::from_raw_parts(&sockaddr as *const _ as *const u8, len as usize)
+            }
+            .to_vec();
+            (bytes, len)
+        }
+        UnifiedSocketAddress::Unix(addr) => {
+            let (sockaddr_un, len) = un_into_sockaddr(addr);
+            let bytes = unsafe {
+                core::slice::from_raw_parts(&sockaddr_un as *const _ as *const u8, len as usize)
+            }
+            .to_vec();
+            (bytes, len)
+        }
+    }
 }
 
-fn into_sockaddr(addr: SocketAddr) -> (ctypes::sockaddr, ctypes::socklen_t) {
+fn un_into_sockaddr(addr: SocketAddrUnix) -> (ctypes::sockaddr_un, ctypes::socklen_t) {
+    debug!(
+        "convert unixsocket address {:?} into ctypes sockaddr_un",
+        addr
+    );
+    let mut sockaddr_un = ctypes::sockaddr_un {
+        sun_family: ctypes::AF_UNIX as u16,
+        sun_path: [0; 108],
+    };
+
+    let path_bytes: Vec<c_char> = addr
+        .sun_path
+        .iter()
+        .take_while(|&&c| c != 0)
+        .chain(iter::once(&0))
+        .map(|&c| c as c_char)
+        .collect();
+
+    let copy_len = path_bytes.len().min(sockaddr_un.sun_path.len());
+    sockaddr_un.sun_path[..copy_len].copy_from_slice(&path_bytes[..copy_len]);
+
+    let sun_path_offset = 2;
+    let sockaddr_len = (sun_path_offset + copy_len) as ctypes::socklen_t;
+    (sockaddr_un, sockaddr_len)
+}
+
+fn in_into_sockaddr(addr: SocketAddr) -> (ctypes::sockaddr, ctypes::socklen_t) {
     debug!("convert socket address {} into ctypes sockaddr", addr);
     match addr {
         SocketAddr::V4(addr) => (
@@ -394,32 +436,35 @@ fn from_sockaddr(
 pub fn sys_socket(domain: c_int, socktype: c_int, protocol: c_int) -> c_int {
     debug!("sys_socket <= {} {} {}", domain, socktype, protocol);
     let (domain, socktype, protocol) = (domain as u32, socktype as u32, protocol as u32);
-    let fdflags = flags_to_options((socktype & ctypes::SOCK_CLOEXEC) as c_int, 0);
-    let nonblock = (socktype & ctypes::SOCK_NONBLOCK) != 0;
+    let mut flags = OpenFlags::empty();
+    let mut nonblock = false;
+    if socktype & ctypes::SOCK_NONBLOCK != 0 {
+        nonblock = true;
+        flags |= OpenFlags::O_NONBLOCK;
+    }
+    if socktype & ctypes::SOCK_CLOEXEC != 0 {
+        flags |= OpenFlags::O_CLOEXEC;
+    }
     let socktype = socktype & !ctypes::SOCK_CLOEXEC & !ctypes::SOCK_NONBLOCK;
     syscall_body!(sys_socket, {
         match domain {
             ctypes::AF_INET => match (socktype, protocol) {
                 (ctypes::SOCK_STREAM, ctypes::IPPROTO_TCP) | (ctypes::SOCK_STREAM, 0) => {
-                    let tcp_socket = TcpSocket::new();
-                    if nonblock {
-                        tcp_socket.set_nonblocking(true);
-                    }
-                    Socket::Tcp(Mutex::new(tcp_socket)).add_to_fd_table(fdflags)
+                    Socket::Tcp(Mutex::new(TcpSocket::new(nonblock))).add_to_fd_table(flags)
                 }
                 (ctypes::SOCK_DGRAM, ctypes::IPPROTO_UDP) | (ctypes::SOCK_DGRAM, 0) => {
-                    Socket::Udp(Mutex::new(UdpSocket::new())).add_to_fd_table(fdflags)
+                    Socket::Udp(Mutex::new(UdpSocket::new())).add_to_fd_table(flags)
                 }
                 _ => Err(LinuxError::EINVAL),
             },
             ctypes::AF_UNIX => match (socktype, protocol) {
                 (ctypes::SOCK_STREAM, 0) => {
                     Socket::Unix(Mutex::new(UnixSocket::new(UnixSocketType::SockStream)))
-                        .add_to_fd_table(fdflags)
+                        .add_to_fd_table(flags)
                 }
                 (ctypes::SOCK_DGRAM, 0) => {
                     Socket::Unix(Mutex::new(UnixSocket::new(UnixSocketType::SockDgram)))
-                        .add_to_fd_table(fdflags)
+                        .add_to_fd_table(flags)
                 }
                 _ => Err(LinuxError::EINVAL),
             },
@@ -563,7 +608,7 @@ pub unsafe fn sys_recvfrom(
         if let Some(addr) = res.1 {
             match addr {
                 UnifiedSocketAddress::Net(addr) => unsafe {
-                    (*socket_addr, *addrlen) = into_sockaddr(addr);
+                    (*socket_addr, *addrlen) = in_into_sockaddr(addr);
                 },
                 UnifiedSocketAddress::Unix(addr) => unsafe {
                     let sockaddr_un_size = addr.get_addr_len();
@@ -646,19 +691,20 @@ pub unsafe fn sys_accept(
         if socket_addr.is_null() || socket_len.is_null() {
             return Err(LinuxError::EFAULT);
         }
+        let user_buf_len = unsafe { *socket_len } as usize;
         let socket = Socket::from_fd(socket_fd)?;
         let new_socket = socket.accept()?;
-        let addr = new_socket.peer_addr()?;
-        let new_fd = Socket::add_to_fd_table(new_socket, fops::OpenOptions::new())?;
-        match addr {
-            UnifiedSocketAddress::Net(addr) => unsafe {
-                (*socket_addr, *socket_len) = into_sockaddr(addr);
-            },
-            UnifiedSocketAddress::Unix(addr) => unsafe {
-                (*socket_addr, *socket_len) = un_into_sockaddr(addr);
-            },
-        }
+        let peer_addr = new_socket.peer_addr()?;
+        let new_fd = Socket::add_to_fd_table(new_socket, OpenFlags::empty())?;
 
+        let (addr_bytes, actual_len) = unified_into_sockaddr(peer_addr);
+
+        let copy_len = user_buf_len.min(addr_bytes.len());
+
+        unsafe {
+            core::ptr::copy_nonoverlapping(addr_bytes.as_ptr(), socket_addr as *mut u8, copy_len);
+            *socket_len = actual_len;
+        }
         Ok(new_fd)
     })
 }
@@ -782,11 +828,19 @@ pub unsafe fn sys_getsockname(
         if addr.is_null() || addrlen.is_null() {
             return Err(LinuxError::EFAULT);
         }
-        if unsafe { *addrlen } < size_of::<ctypes::sockaddr>() as u32 {
-            return Err(LinuxError::EINVAL);
-        }
+
+        let user_buf_len = unsafe { *addrlen } as usize;
+        let (sockaddr_bytes, actual_len) = {
+            let socket = Socket::from_fd(sock_fd)?;
+            let local_addr = socket.local_addr()?;
+            unified_into_sockaddr(local_addr)
+        };
+
+        let copy_len = user_buf_len.min(sockaddr_bytes.len());
+
         unsafe {
-            (*addr, *addrlen) = into_sockaddr(Socket::from_fd(sock_fd)?.local_addr()?);
+            core::ptr::copy_nonoverlapping(sockaddr_bytes.as_ptr(), addr as *mut u8, copy_len);
+            *addrlen = actual_len;
         }
         Ok(0)
     })
@@ -876,30 +930,35 @@ pub fn sys_getsockopt(
 /// Get peer address to which the socket sockfd is connected.
 pub unsafe fn sys_getpeername(
     sock_fd: c_int,
-    addr: *mut ctypes::sockaddr,
-    addrlen: *mut ctypes::socklen_t,
+    socket_addr: *mut ctypes::sockaddr,
+    socket_len: *mut ctypes::socklen_t,
 ) -> c_int {
     debug!(
         "sys_getpeername <= {} {:#x} {:#x}",
-        sock_fd, addr as usize, addrlen as usize
+        sock_fd, socket_addr as usize, socket_len as usize
     );
     syscall_body!(sys_getpeername, {
-        if addr.is_null() || addrlen.is_null() {
+        if socket_addr.is_null() || socket_len.is_null() {
             return Err(LinuxError::EFAULT);
         }
-        if unsafe { *addrlen } < size_of::<ctypes::sockaddr>() as u32 {
+        if unsafe { *socket_len } < size_of::<ctypes::sockaddr>() as u32 {
             return Err(LinuxError::EINVAL);
         }
+        let user_buf_len = unsafe { *socket_len } as usize;
         let sockaddr = Socket::from_fd(sock_fd)?.peer_addr()?;
-        match sockaddr {
-            UnifiedSocketAddress::Net(netaddr) => unsafe {
-                (*addr, *addrlen) = into_sockaddr(netaddr);
-            },
-            UnifiedSocketAddress::Unix(unixaddr) => unsafe {
-                (*addr, *addrlen) = un_into_sockaddr(unixaddr);
-            },
+        let (addr_bytes, actual_len) = unified_into_sockaddr(sockaddr);
+        let copy_len = user_buf_len.min(addr_bytes.len());
+
+        unsafe {
+            core::ptr::copy_nonoverlapping(addr_bytes.as_ptr(), socket_addr as *mut u8, copy_len);
+            *socket_len = actual_len;
         }
-        Ok(0)
+
+        if copy_len < addr_bytes.len() {
+            Err(LinuxError::ENOBUFS)
+        } else {
+            Ok(0)
+        }
     })
 }
 
@@ -956,7 +1015,10 @@ pub fn sys_socketpair(domain: c_int, socktype: c_int, protocol: c_int, sv: &mut 
     info!("sys_socketpair <= domain: {domain}, socktype: {socktype}, protocol: {protocol}, sv pointer: {:#x}", sv.as_ptr() as usize);
     syscall_body!(sys_socketpair, {
         let (domain, socktype, _protocol) = (domain as u32, socktype as u32, protocol as u32);
-        let fdflags = flags_to_options((socktype & ctypes::SOCK_CLOEXEC) as c_int, 0);
+        let mut flags = OpenFlags::empty();
+        if socktype & ctypes::SOCK_CLOEXEC != 0 {
+            flags |= OpenFlags::O_CLOEXEC;
+        }
         let socktype = socktype & !ctypes::SOCK_CLOEXEC & !ctypes::SOCK_NONBLOCK;
         match domain {
             ctypes::AF_UNIX => {
@@ -969,8 +1031,9 @@ pub fn sys_socketpair(domain: c_int, socktype: c_int, protocol: c_int, sv: &mut 
                     }
                     _ => return Err(LinuxError::EAFNOSUPPORT),
                 };
-                sv[0] = Socket::Unix(Mutex::new(sk1)).add_to_fd_table(fdflags.clone())?;
-                sv[1] = Socket::Unix(Mutex::new(sk2)).add_to_fd_table(fdflags)?;
+
+                sv[0] = Socket::Unix(Mutex::new(sk1)).add_to_fd_table(flags)?;
+                sv[1] = Socket::Unix(Mutex::new(sk2)).add_to_fd_table(flags)?;
                 info!("create sv[0] {}, sv[1] {}", sv[0], sv[1]);
                 Ok(0)
             }

@@ -47,16 +47,20 @@ ruxfdtable = { path = "../../modules/ruxfdtable" }
 ruxmm = { path = "../../modules/ruxmm", optional = true }
 ruxfutex = { path = "../../modules/ruxfutex", optional = true }
 axalloc = { path = "../../modules/axalloc", optional = true }
-ruxtask = { path = "../../modules/ruxtask", features = ["notest"], optional = true }
+ruxtask = { path = "../../modules/ruxtask", features = [
+    "notest",
+], optional = true }
 ruxfs = { path = "../../modules/ruxfs", optional = true }
 ruxnet = { path = "../../modules/ruxnet", optional = true }
+ruxtty = { path = "../../modules/ruxtty" }
 
 # Other crates
 axio = { path = "../../crates/axio" }
 axerrno = { path = "../../crates/axerrno" }
+ringbuffer = { path = "../../crates/ringbuffer" }
 memory_addr = "0.1.0"
 static_assertions = "1.1.0"
-spin = { version = "0.9" }
+spin = { workspace = true }
 spinlock = { path = "../../crates/spinlock" }
 lazy_static = { version = "1.4", features = ["spin_no_std"] }
 flatten_objects = { path = "../../crates/flatten_objects" }
@@ -66,7 +70,7 @@ capability = { path = "../../crates/capability" }
 
 cfg-if = "1.0"
 elf = { version = "0.7", default-features = false }
-bitflags = "2.2"
+bitflags = { workspace = true }
 
 lazy_init = { path = "../../crates/lazy_init" }
 

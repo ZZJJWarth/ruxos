@@ -123,6 +123,7 @@ dependencies = [
 name = "arm_gic"
 version = "0.1.0"
 dependencies = [
+ "log",
  "tock-registers",
 ]
 
@@ -366,6 +367,7 @@ name = "capability"
 version = "0.1.0"
 dependencies = [
  "axerrno",
+ "axfs_vfs",
  "bitflags 2.6.0",
 ]
 
@@ -722,6 +724,7 @@ version = "0.1.0"
 dependencies = [
  "fdt-rs",
  "lazy_init",
+ "log",
 ]
 
 [[package]]
@@ -1262,7 +1265,9 @@ checksum = "19b17cddbe7ec3f8bc800887bab5e717348c95ea2ca0b1bf0837fb964dc67099"
 
 [[package]]
 name = "percpu"
-version = "0.1.0"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01e56c0c558952222967b592899f98765b48590e7bd7403bfd7075f73afc6ed6"
 dependencies = [
  "cfg-if",
  "kernel_guard",
@@ -1273,7 +1278,9 @@ dependencies = [
 
 [[package]]
 name = "percpu_macros"
-version = "0.1.0"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a9f4cc54a2e471ff72f1499461ba381ad4eae9cbd60d29c258545b995e406e0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1492,6 +1499,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
 
 [[package]]
+name = "ringbuffer"
+version = "0.1.0"
+
+[[package]]
 name = "riscv"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1611,12 +1622,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "ruxdtb"
+version = "0.1.0"
+dependencies = [
+ "dtb",
+ "log",
+]
+
+[[package]]
 name = "ruxfdtable"
 version = "0.1.0"
 dependencies = [
  "axerrno",
  "axfs_vfs",
  "axio",
+ "bitflags 2.6.0",
+ "bitmaps",
+ "capability",
  "flatten_objects",
  "lazy_static",
  "log",
@@ -1639,6 +1661,7 @@ dependencies = [
  "ruxnet",
  "ruxruntime",
  "ruxtask",
+ "ruxtty",
  "spinlock",
 ]
 
@@ -1663,6 +1686,7 @@ dependencies = [
  "log",
  "memory_addr",
  "ruxdriver",
+ "ruxfdtable",
  "spin",
 ]
 
@@ -1688,6 +1712,8 @@ dependencies = [
  "arm_gic",
  "arm_pl011",
  "axalloc",
+ "axerrno",
+ "axio",
  "axlog",
  "bitflags 2.6.0",
  "cfg-if",
@@ -1711,11 +1737,11 @@ dependencies = [
  "raw-cpuid 11.1.0",
  "riscv",
  "ruxconfig",
+ "ruxtty",
  "sbi-rt",
  "spinlock",
  "static_assertions",
  "tock-registers",
- "tty",
  "virtio-drivers",
  "x2apic",
  "x86",
@@ -1820,6 +1846,7 @@ dependencies = [
  "lazy_static",
  "memory_addr",
  "page_table",
+ "ringbuffer",
  "ruxconfig",
  "ruxfdtable",
  "ruxfeat",
@@ -1830,6 +1857,7 @@ dependencies = [
  "ruxnet",
  "ruxruntime",
  "ruxtask",
+ "ruxtty",
  "spin",
  "spinlock",
  "static_assertions",
@@ -1869,6 +1897,7 @@ dependencies = [
  "ruxconfig",
  "ruxdisplay",
  "ruxdriver",
+ "ruxdtb",
  "ruxfs",
  "ruxfutex",
  "ruxhal",
@@ -1876,7 +1905,7 @@ dependencies = [
  "ruxnet",
  "ruxrand",
  "ruxtask",
- "tty",
+ "ruxtty",
 ]
 
 [[package]]
@@ -1887,7 +1916,6 @@ dependencies = [
  "axerrno",
  "axfs_vfs",
  "axio",
- "bitmaps",
  "cfg-if",
  "crate_interface",
  "flatten_objects",
@@ -1904,11 +1932,25 @@ dependencies = [
  "ruxfdtable",
  "ruxfs",
  "ruxhal",
- "ruxtask",
  "scheduler",
  "spin",
  "spinlock",
  "timer_list",
+]
+
+[[package]]
+name = "ruxtty"
+version = "0.0.1"
+dependencies = [
+ "axerrno",
+ "axio",
+ "axlog",
+ "bitflags 2.6.0",
+ "lazy_init",
+ "num_enum",
+ "ringbuffer",
+ "spin",
+ "spinlock",
 ]
 
 [[package]]
@@ -2171,15 +2213,6 @@ dependencies = [
  "indexmap",
  "toml_datetime",
  "winnow",
-]
-
-[[package]]
-name = "tty"
-version = "0.0.1"
-dependencies = [
- "lazy_init",
- "log",
- "spinlock",
 ]
 
 [[package]]
