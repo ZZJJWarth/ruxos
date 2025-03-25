@@ -50,6 +50,7 @@ impl<M: PagingMetaData, PTE: GenericPTE, IF: PagingIf> PageTable64<M, PTE, IF> {
     ///
     /// It will allocate a new page for the root page table.
     pub fn try_new() -> PagingResult<Self> {
+        // 那么root_paddr其实就是页表的地址
         let root_paddr = Self::alloc_table()?;
         Ok(Self {
             root_paddr,
@@ -108,6 +109,7 @@ impl<M: PagingMetaData, PTE: GenericPTE, IF: PagingIf> PageTable64<M, PTE, IF> {
     ///
     /// Returns [`Err(PagingError::NotMapped)`](PagingError::NotMapped) if the
     /// mapping is not present.
+    /// 该函数返回虚拟地址对应的物理栈帧地址以及页大小，标志位等信息
     pub fn query(&self, vaddr: VirtAddr) -> PagingResult<(PhysAddr, MappingFlags, PageSize)> {
         let (entry, size) = self.get_entry_mut(vaddr)?;
         if entry.is_unused() {
@@ -259,8 +261,12 @@ impl<M: PagingMetaData, PTE: GenericPTE, IF: PagingIf> PageTable64<M, PTE, IF> {
 
 // Private implements.
 impl<M: PagingMetaData, PTE: GenericPTE, IF: PagingIf> PageTable64<M, PTE, IF> {
+    /// 本函数用于分配一个页表，如果成功则返回一个物理地址
     fn alloc_table() -> PagingResult<PhysAddr> {
+        // 这里通过IF结构分配了一个物理页帧
         if let Some(paddr) = IF::alloc_frame() {
+            // 获得一个物理地址后，我们需要给它归零，所以需要转换为虚拟地址并给它这个栈帧的内容全部清零
+            // 所以这个函数其实只是返回了一个物理页栈，并把这个页帧的东西全部清0
             let ptr = IF::phys_to_virt(paddr).as_mut_ptr();
             unsafe { core::ptr::write_bytes(ptr, 0, PAGE_SIZE_4K) };
             Ok(paddr)

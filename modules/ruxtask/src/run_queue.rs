@@ -31,24 +31,29 @@ static WAIT_FOR_EXIT: WaitQueue = WaitQueue::new();
 #[percpu::def_percpu]
 static IDLE_TASK: LazyInit<AxTaskRef> = LazyInit::new();
 
+// 有理由认为任务调度的功能是由这个结构实现的
 pub(crate) struct AxRunQueue {
     scheduler: Scheduler,
 }
 
 impl AxRunQueue {
     pub fn new() -> SpinNoIrq<Self> {
+        // 一开始我们创建了一个gc task
+        // 加入了gc task之后我们就返回了
         let gc_task = TaskInner::new(gc_entry, "gc".into(), ruxconfig::TASK_STACK_SIZE);
         let mut scheduler = Scheduler::new();
         scheduler.add_task(gc_task);
         SpinNoIrq::new(Self { scheduler })
     }
 
+    // 该函数是给调度器中加入任务
     pub fn add_task(&mut self, task: AxTaskRef) {
         debug!("task spawn: {}", task.id_name());
         assert!(task.is_ready());
         self.scheduler.add_task(task);
     }
 
+    // 暂时不懂
     #[cfg(feature = "irq")]
     pub fn scheduler_timer_tick(&mut self) {
         use crate::loadavg;
@@ -60,6 +65,7 @@ impl AxRunQueue {
         }
     }
 
+    // 这个函数只是打印了一个信息并调用了resched方法
     pub fn yield_current(&mut self) {
         let curr = crate::current();
         trace!("task yield: {}", curr.id_name());
@@ -67,11 +73,13 @@ impl AxRunQueue {
         self.resched(false);
     }
 
+    // 设置当前任务的优先级
     pub fn set_current_priority(&mut self, prio: isize) -> bool {
         self.scheduler
             .set_priority(crate::current().as_task_ref(), prio)
     }
 
+    // 似乎是抢占式调度
     #[cfg(feature = "preempt")]
     pub fn preempt_resched(&mut self) {
         let curr = crate::current();
@@ -96,6 +104,7 @@ impl AxRunQueue {
         }
     }
 
+    // 它会退出当前的任务，如果当前任务是init任务，似乎就会导致停机，否则任务只是会被推入退出队列并进行调度
     pub fn exit_current(&mut self, exit_code: i32) -> ! {
         let curr = crate::current();
         debug!("task exit: {}, exit_code={}", curr.id_name(), exit_code);
@@ -115,6 +124,7 @@ impl AxRunQueue {
         unreachable!("task exited!");
     }
 
+    // 阻塞当前的任务，逻辑上是把当前任务的状态进行设置，并进行调度
     pub fn block_current<F>(&mut self, wait_queue_push: F)
     where
         F: FnOnce(AxTaskRef),
@@ -134,6 +144,7 @@ impl AxRunQueue {
         self.resched(false);
     }
 
+    // 这里可以看出，本结构体应该是存储就绪态的task,如果你对某个任务解除阻塞，那么就会进入本队列中
     pub fn unblock_task(&mut self, task: AxTaskRef, resched: bool) {
         debug!("task unblock: {}", task.id_name());
         if task.is_blocked() {
@@ -146,6 +157,7 @@ impl AxRunQueue {
         }
     }
 
+    // 这里是休眠的代码，貌似是休眠当前任务，主要的休眠执行者是set_alarm_wakeup
     #[cfg(feature = "irq")]
     pub fn sleep_until(&mut self, deadline: ruxhal::time::TimeValue) {
         let curr = crate::current();
@@ -166,29 +178,37 @@ impl AxRunQueue {
     /// Common reschedule subroutine. If `preempt`, keep current task's time
     /// slice, otherwise reset it.
     fn resched(&mut self, preempt: bool) {
+        // 本函数似乎是调度的执行者
+        // 首先获得当前的任务
         let prev = crate::current();
+        
         if prev.is_running() {
+            // 如果正在运行，则设置为就绪态
             prev.set_state(TaskState::Ready);
+            // 如果prev不是idle的任务，则放入队列的尾端（如果是抢占式的调度，则放入队列的前端）
             if !prev.is_idle() {
                 self.scheduler
                     .put_prev_task(prev.clone_as_taskref(), preempt);
             }
         }
+        // 从调度器中得到一个任务，从调度器中得到的任务会被移出调度器
         let next = self.scheduler.pick_next_task().unwrap_or_else(|| unsafe {
             // Safety: IRQs must be disabled at this time.
             IDLE_TASK.current_ref_raw().get_unchecked().clone()
         });
-
+        // 调度器的部分结束之后，会进入switch to代码
         self.switch_to(prev, next);
     }
 
     #[cfg(target_arch = "aarch64")]
     fn switch_to(&mut self, prev_task: CurrentTask, next_task: AxTaskRef) {
+        // 这里是对于aarch架构的代码
         trace!(
             "context switch: {} -> {}",
             prev_task.id_name(),
             next_task.id_name()
         );
+        // 这里是对preempt的一些设置
         #[cfg(feature = "preempt")]
         next_task.set_preempt_pending(false);
         next_task.set_state(TaskState::Running);
@@ -204,7 +224,7 @@ impl AxRunQueue {
             // but won't be dropped until `gc_entry()` is called.
             assert!(Arc::strong_count(prev_task.as_task_ref()) > 1);
             assert!(Arc::strong_count(&next_task) >= 1);
-
+            // 我们获得下一个任务的页表地址
             let next_page_table = next_task.pagetable.lock();
             let root_paddr = next_page_table.root_paddr();
 
@@ -212,7 +232,7 @@ impl AxRunQueue {
             drop(next_page_table);
 
             CurrentTask::set_current(prev_task, next_task);
-
+            // switch to函数需要页表地址，所以唯一的不同就是页表的问题
             (*prev_ctx_ptr).switch_to(&*next_ctx_ptr, root_paddr);
         }
     }

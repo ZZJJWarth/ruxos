@@ -133,7 +133,7 @@ impl TaskContext {
 unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext) {
     asm!(
         "
-        // save old context (callee-saved registers)
+        // save old context (callee-saved registerhs)
         STR     ra, a0, 0
         STR     sp, a0, 1
         STR     s0, a0, 2
