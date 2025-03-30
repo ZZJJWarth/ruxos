@@ -389,7 +389,7 @@ impl TaskInner {
         Arc::new(AxTask::new(t))
     }
 
-    #[cfg(all(target_arch = "aarch64", feature = "paging", feature = "fs"))]
+    #[cfg(all(any(target_arch = "aarch64",target_arch = "riscv64"), feature = "paging", feature = "fs"))]
     /// only support for aarch64
     pub fn fork() -> AxTaskRef {
         use crate::alloc::string::ToString;
@@ -952,11 +952,25 @@ impl CurrentTask {
             "-----------set_current-------------,next ptr={:#}",
             next.id_name()
         );
+        // if next.id().0 == 4{
+            unsafe {
+                pan();
+            }
+        // }
         let Self(arc) = prev;
         ManuallyDrop::into_inner(arc); // `call Arc::drop()` to decrease prev task reference count.
         let ptr = Arc::into_raw(next);
         ruxhal::cpu::set_current_task_ptr(ptr);
     }
+}
+
+extern "C"{
+    fn pan();
+}
+
+#[no_mangle]
+extern "C" fn ppan(){
+    return;
 }
 
 impl Deref for CurrentTask {

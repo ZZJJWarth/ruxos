@@ -9,6 +9,10 @@
 
 use core::arch::asm;
 use memory_addr::VirtAddr;
+use memory_addr::PhysAddr;
+
+use crate::arch::read_page_table_root;
+// use super::satp::RegSatp;
 
 include_asm_marcos!();
 
@@ -116,17 +120,97 @@ impl TaskContext {
     ///
     /// It first saves the current task's context from CPU to this place, and then
     /// restores the next task's context from `next_ctx` to CPU.
-    pub fn switch_to(&mut self, next_ctx: &Self) {
+    pub fn switch_to(&mut self, next_ctx: &Self, page_table_addr:Option<PhysAddr>) {
         #[cfg(feature = "tls")]
         {
             self.tp = super::read_thread_pointer();
             unsafe { super::write_thread_pointer(next_ctx.tp) };
         }
+
+        #[cfg(feature = "paging")]
+        match page_table_addr{
+            Some(addr)=>{
+                use crate::arch::write_page_table_root;
+                if read_page_table_root()!=addr{
+                    unsafe{write_page_table_root(addr);}                    
+                }
+            }
+            None=>{
+
+            }
+        }
+
         unsafe {
             // TODO: switch FP states
             context_switch(self, next_ctx)
         }
     }
+
+    pub fn save_current_content(&mut self, src: *const u8, dst: *mut u8, size: usize){
+        unsafe{save_stack(src,dst,size);}
+
+        for i in 0..size{
+            unsafe {if *src.add(i) != *dst.add(i){
+                panic!()
+            }}
+        }
+        unsafe {save_current_context(self);}
+    }
+}
+
+#[naked]
+#[allow(named_asm_labels)]
+unsafe fn save_current_context(_current_task:&mut TaskContext){
+
+    asm!("
+        sd  ra,0(a0)
+        sd  sp,8(a0)
+        sd  s0,16(a0)
+        sd  s1,24(a0)
+        sd  s2,32(a0)
+        sd  s3,40(a0)
+        sd  s4,48(a0)
+        sd  s5,56(a0)
+        sd  s6,64(a0)
+        sd  s7,72(a0)
+        sd  s8,80(a0)
+        sd  s9,88(a0)
+        sd  s10,96(a0)
+        sd  s11,104(a0)
+        sd  tp,112(a0)
+        ret
+    ",
+    options(noreturn))    
+}
+
+#[naked]
+#[no_mangle]
+#[allow(named_asm_labels)]
+// TODO: consider using SIMD instructions to copy the stack in parallel.
+unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
+    // a0:src ; a1:dst ; a2:size
+    asm!("
+        // addi    sp,sp,-16
+        // sd      a4,0(sp)
+        // sd      a5,8(sp)
+        // ebreak
+        xor     a4,a4,a4
+        add    a4,a4,a2
+        start_copy:
+        ld      a5,0(a0)
+        sd      a5,0(a1)
+        addi    a0,a0,8
+        addi    a1,a1,8
+        addi    a4,a4,-8
+        bnez    a4,start_copy
+        // ld      a4,0(sp)
+        // ld      a5,8(sp)
+        // addi    sp,sp,16
+        ret
+
+        ",
+        options(noreturn)
+)
 }
 
 #[naked]
@@ -149,7 +233,8 @@ unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task:
         STR     s10, a0, 12
         STR     s11, a0, 13
 
-        // restore new context
+
+        // restore new cont
         LDR     s11, a1, 13
         LDR     s10, a1, 12
         LDR     s9, a1, 11

@@ -13,6 +13,7 @@ mod macros;
 mod context;
 mod trap;
 mod gp;
+// mod satp;
 use memory_addr::{PhysAddr, VirtAddr};
 use riscv::asm;
 use riscv::register::{satp, sstatus, stvec};

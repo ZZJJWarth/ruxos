@@ -370,6 +370,12 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[1] as ctypes::size_t,
                 args[2] as c_int,
             ) as _,
+            SyscallId::WAIT4 => ruxos_posix_api::sys_wait4(
+                args[0] as ctypes::pid_t,
+                args[1] as *mut c_int,
+                args[2] as c_int, 
+                args[3] as *mut ctypes::rusage, 
+            ) as _,
             SyscallId::PRLIMIT64 => ruxos_posix_api::sys_prlimit64(
                 args[0] as ctypes::pid_t,
                 args[1] as c_int,

@@ -128,5 +128,7 @@ pub enum SyscallId {
     MADVISE = 233,
     #[cfg(feature = "alloc")]
     MPROTECT = 226,
+    #[cfg(feature = "multitask")]
+    WAIT4 = 260,
     PRLIMIT64 = 261,
 }
