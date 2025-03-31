@@ -203,6 +203,8 @@ impl AxRunQueue {
     #[cfg(any(target_arch = "aarch64",target_arch = "riscv64"))]
     fn switch_to(&mut self, prev_task: CurrentTask, next_task: AxTaskRef) {
         // 这里是对于aarch架构的代码
+
+        use core::arch::asm;
         trace!(
             "context switch: {} -> {}",
             prev_task.id_name(),
@@ -231,8 +233,18 @@ impl AxRunQueue {
             // Drop the `next_page_table` here, so that it will not be dropped after context switch.
             drop(next_page_table);
             CurrentTask::set_current(prev_task, next_task);
+            // loop{};
+            asm!("
+                nop
+                nop
+                nop
+                nop
+                nop
+            ");
             // switch to函数需要页表地址，所以唯一的不同就是页表的问题
-            (*prev_ctx_ptr).switch_to(&*next_ctx_ptr, Some(root_paddr));
+            debug!("root_paddr:{:?}",root_paddr);
+            (*prev_ctx_ptr).switch_to(&*next_ctx_ptr, root_paddr);
+            // (*prev_ctx_ptr).switch_to(&*next_ctx_ptr, Some(root_paddr));
         }
     }
 

@@ -66,6 +66,10 @@ pub struct Pthread {
     retval: Arc<Packet<*mut c_void>>,
 }
 
+extern "C"{
+    fn pan();
+}
+
 impl Pthread {
     fn create(
         _attr: *const ctypes::pthread_attr_t,
@@ -131,6 +135,9 @@ impl Pthread {
 
     fn current_ptr() -> *mut Pthread {
         let tid = ruxtask::current().id().as_u64();
+        unsafe {
+            pan();
+        }
         match TID_TO_PTHREAD.read().get(&tid) {
             None => core::ptr::null_mut(),
             Some(ptr) => ptr.0 as *mut Pthread,
@@ -143,6 +150,9 @@ impl Pthread {
 
     #[cfg(feature = "musl")]
     fn exit_musl(_retcode: usize) -> ! {
+        unsafe {
+            pan();
+        }
         let tid = Self::current()
             .expect("fail to get current thread")
             .inner

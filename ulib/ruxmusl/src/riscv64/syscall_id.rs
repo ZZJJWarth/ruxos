@@ -63,6 +63,8 @@ pub enum SyscallId {
     FDATASYNC = 83,
     EXIT = 93,
     #[cfg(feature = "multitask")]
+    EXIT_GROUP = 94,
+    #[cfg(feature = "multitask")]
     SET_TID_ADDRESS = 96,
     #[cfg(feature = "multitask")]
     FUTEX = 98,
@@ -83,8 +85,10 @@ pub enum SyscallId {
     UMASK = 166,
     #[cfg(feature = "multitask")]
     GETPID = 172,
+    GETPPID = 173,
     GETEUID = 175,
     GETEGID = 177,
+    GETTID = 178,
     SYSINFO = 179,
     #[cfg(feature = "net")]
     SOCKET = 198,

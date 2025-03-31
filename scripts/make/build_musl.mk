@@ -20,11 +20,11 @@ CFLAGS += -isystem$(CURDIR)/$(inc_dir)
 LDFLAGS += -nostdlib -static -no-pie --gc-sections -T$(LD_SCRIPT)
 
 ifeq ($(MODE), release)
-  CFLAGS += -O3 
+  CFLAGS += -O0 
 else ifeq ($(MODE), reldebug)
-  CFLAGS += -O3 -g
+  CFLAGS += -O0 -g
 else
-  CFLAGS += -Og -g
+  CFLAGS += -O0 -g
 endif
 
 ifeq ($(ARCH), x86_64)

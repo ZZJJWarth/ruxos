@@ -10,8 +10,11 @@
 use core::arch::asm;
 use memory_addr::VirtAddr;
 use memory_addr::PhysAddr;
+use riscv::asm;
 
 use crate::arch::read_page_table_root;
+
+use super::reg_satp::RegSatp;
 // use super::satp::RegSatp;
 
 include_asm_marcos!();
@@ -120,29 +123,29 @@ impl TaskContext {
     ///
     /// It first saves the current task's context from CPU to this place, and then
     /// restores the next task's context from `next_ctx` to CPU.
-    pub fn switch_to(&mut self, next_ctx: &Self, page_table_addr:Option<PhysAddr>) {
+    pub fn switch_to(&mut self, next_ctx: &Self, page_table_addr:PhysAddr) {
         #[cfg(feature = "tls")]
         {
             self.tp = super::read_thread_pointer();
             unsafe { super::write_thread_pointer(next_ctx.tp) };
         }
 
-        #[cfg(feature = "paging")]
-        match page_table_addr{
-            Some(addr)=>{
-                use crate::arch::write_page_table_root;
-                if read_page_table_root()!=addr{
-                    unsafe{write_page_table_root(addr);}                    
-                }
-            }
-            None=>{
+        // #[cfg(feature = "paging")]
+        // match page_table_addr{
+        //     Some(addr)=>{
+        //         use crate::arch::write_page_table_root;
+        //         if read_page_table_root()!=addr{
+        //             unsafe{write_page_table_root(addr);}                    
+        //         }
+        //     }
+        //     None=>{
 
-            }
-        }
-
+        //     }
+        // }
+        let satp = RegSatp::new(riscv::register::satp::Mode::Sv39, 0, page_table_addr.into());
         unsafe {
             // TODO: switch FP states
-            context_switch(self, next_ctx)
+            context_switch(self, next_ctx,satp);
         }
     }
 
@@ -214,7 +217,8 @@ unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
 }
 
 #[naked]
-unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext) {
+#[allow(named_asm_labels)]
+unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext,_page_table_addr:usize) {
     asm!(
         "
         // save old context (callee-saved registerhs)
@@ -232,6 +236,13 @@ unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task:
         STR     s9, a0, 11
         STR     s10, a0, 12
         STR     s11, a0, 13
+
+        csrr    a3,satp
+        csrw    satp,a2
+        xor     a3,a3,a2
+        beqz    a3,set_satp_done
+        sfence.vma
+set_satp_done:
 
 
         // restore new cont

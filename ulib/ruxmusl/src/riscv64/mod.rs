@@ -302,6 +302,10 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[4] as *mut ctypes::sockaddr,
                 args[5] as *mut ctypes::socklen_t,
             ) as _,
+            SyscallId::GETTID => ruxos_posix_api::sys_gettid() as _,
+            SyscallId::GETPPID => ruxos_posix_api::sys_getppid() as _,
+            #[cfg(feature = "multitask")]
+            SyscallId::EXIT_GROUP => ruxos_posix_api::sys_exit_group(args[0] as c_int) as _,
             #[cfg(feature = "net")]
             SyscallId::SETSOCKOPT => ruxos_posix_api::sys_setsockopt(
                 args[0] as c_int,

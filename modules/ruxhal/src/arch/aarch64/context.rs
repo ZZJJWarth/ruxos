@@ -203,9 +203,7 @@ unsafe extern "C" fn save_fpstate_context(_current_fpstate: &mut FpState) {
         mrs     x10, fpsr
         stp     q0, q1, [x0, 0 * 16]
         stp     q2, q3, [x0, 2 * 16]
-        stp     q4, q5, [x0, 4 * 16if *src.add(i) != *dst.add(i){
-
-            }]
+        stp     q4, q5, [x0, 4 * 16]
         stp     q6, q7, [x0, 6 * 16]
         stp     q8, q9, [x0, 8 * 16]
         stp     q10, q11, [x0, 10 * 16]
