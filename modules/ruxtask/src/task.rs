@@ -16,6 +16,8 @@ use alloc::{
     string::String,
     sync::{Arc, Weak},
 };
+use spin::Spin;
+use core::arch::asm;
 use core::mem::ManuallyDrop;
 use core::ops::Deref;
 use core::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, AtomicU8, Ordering};
@@ -114,6 +116,10 @@ pub struct TaskInner {
     #[cfg(feature = "paging")]
     /// memory management
     pub mm: Arc<MmapStruct>,
+
+    pub heap_start:SpinNoIrq<usize>,
+    pub heap_end:SpinNoIrq<usize>,
+
 }
 
 impl TaskId {
@@ -266,6 +272,8 @@ impl TaskInner {
             fs: current().fs.clone(),
             #[cfg(feature = "paging")]
             mm: current().mm.clone(),
+            heap_start:0xffff_ffc7_0000_0000,
+            heap_end:0xffff_ffc7_0000_0000,
         }
     }
 
@@ -312,6 +320,8 @@ impl TaskInner {
             fs: current().fs.clone(),
             #[cfg(feature = "paging")]
             mm: current().mm.clone(),
+            heap_start:0xffff_ffc7_0000_0000,
+            heap_end:0xffff_ffc7_0000_0000,
         }
     }
 
@@ -547,6 +557,9 @@ impl TaskInner {
             fs: Arc::new(SpinNoIrq::new(current_task.fs.lock().clone())),
             #[cfg(feature = "paging")]
             mm: Arc::new(cloned_mm),
+                heap_start:0xffff_ffc7_0000_0000,
+            heap_end:0xffff_ffc7_0000_0000,
+            
         };
 
         debug!("new task forked: {}", t.id_name());
@@ -628,6 +641,8 @@ impl TaskInner {
             fs: Arc::new(SpinNoIrq::new(None)),
             #[cfg(feature = "paging")]
             mm: Arc::new(MmapStruct::new()),
+             heap_start:0xffff_ffc7_0000_0000,
+            heap_end:0xffff_ffc7_0000_0000,
         };
         debug!("new init task: {}", t.id_name());
 
@@ -698,6 +713,8 @@ impl TaskInner {
             fs: task_ref.fs.clone(),
             #[cfg(feature = "paging")]
             mm: task_ref.mm.clone(),
+             heap_start:0xffff_ffc7_0000_0000,
+            heap_end:0xffff_ffc7_0000_0000,
         };
 
         #[cfg(feature = "tls")]

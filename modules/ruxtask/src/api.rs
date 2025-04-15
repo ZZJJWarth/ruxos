@@ -8,6 +8,8 @@
  */
 
 //! Task APIs for multi-task configuration.
+use core::arch::asm;
+
 use alloc::{string::String, sync::Arc};
 
 pub(crate) use crate::run_queue::{AxRunQueue, RUN_QUEUE};
@@ -32,8 +34,8 @@ cfg_if::cfg_if! {
         pub(crate) type Scheduler = scheduler::CFScheduler<TaskInner>;
     } else {
         // If no scheduler features are set, use FIFO as the default.
-        pub(crate) type AxTask = scheduler::FifoTask<TaskInner>;
-        pub(crate) type Scheduler = scheduler::FifoScheduler<TaskInner>;
+        pub(crate) type AxTask = scheduler::RRTask<TaskInner>;
+        pub(crate) type Scheduler = scheduler::RRScheduler<TaskInner>;
     }
 }
 

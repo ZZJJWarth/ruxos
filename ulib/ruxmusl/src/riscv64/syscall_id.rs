@@ -74,11 +74,14 @@ pub enum SyscallId {
     CLOCK_NANOSLEEP = 115,
     SCHED_YIELD = 124,
     #[cfg(feature = "signal")]
+    KILL = 129,
+    #[cfg(feature = "signal")]
     SIGALTSTACK = 132,
     #[cfg(feature = "signal")]
     RT_SIGACTION = 134,
     #[cfg(feature = "signal")]
     RT_SIGPROCMASK = 135,
+    GETPGID = 155,
     UNAME = 160,
     GETRLIMIT = 163,
     SETRLIMIT = 164,

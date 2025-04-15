@@ -43,11 +43,11 @@ impl ruxhal::trap::TrapHandler for TrapHandlerImpl {
         // debug!("page_fault happen:vaddr:{:x?},cause:{:?}",vaddr,cause);
         let binding_task = current();
         let mut binding_mem_map = binding_task.mm.vma_map.lock();
-        for i in binding_mem_map.iter(){
-            debug!("{:x?}:{:x?}---{:x?}",i.0,i.1.start_addr,i.1.end_addr);
-        }
+        // for i in binding_mem_map.iter(){
+        //     debug!("{:x?}:{:x?}---{:x?}",i.0,i.1.start_addr,i.1.end_addr);
+        // }
         let vma_map = binding_mem_map.deref_mut();
-        debug!("{:x?}",vma_map.upper_bound(Bound::Included(&0xffffffc8ffffffff)).key());
+        // debug!("{:x?}",vma_map.upper_bound(Bound::Included(&0xffffffc8ffffffff)).key());
         if let Some(vma) = vma_map.upper_bound(Bound::Included(&vaddr)).value() {
             // Check if page existing in the vma, go to panic if not.
             if vma.end_addr <= vaddr {

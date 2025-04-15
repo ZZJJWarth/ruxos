@@ -1,0 +1,493 @@
+git submodule update --init --recursive --remote patches/opensbi
+CROSS_COMPILE=riscv64-linux-musl- make -C patches/opensbi PLATFORM=generic
+make[1]: Entering directory '/home/warth/code/Ruxos/patches/opensbi'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/warth/code/Ruxos/patches/opensbi'
+[37mmkdir[0m [90m-p apps/c/fork/[0m
+    [92;1mBuilding[0m App: fork, Arch: riscv64, Platform: riscv64-qemu-virt, App type: c
+[37mcargo build[0m [90m--target riscv64gc-unknown-none-elf --target-dir /home/warth/code/Ruxos/target --release  -p ruxmusl --features "ruxfeat/log-level-debug ruxfeat/rtc ruxfeat/virtio-9p ruxfeat/tls ruxmusl/multitask ruxmusl/fs ruxmusl/paging ruxmusl/alloc ruxmusl/paging ruxmusl/alloc ruxmusl/irq ruxmusl/musl ruxmusl/multitask ruxmusl/fs ruxmusl/pipe ruxmusl/poll ruxmusl/signal ruxmusl/net ruxmusl/epoll ruxmusl/select ruxmusl/fd ruxmusl/musl ruxmusl/fp_simd ruxmusl/fd ruxmusl/sched_rr"[0m
+[37mriscv64-linux-musl-gcc[0m [90m-nostdinc -fno-builtin -ffreestanding -Wall -isystem/home/warth/code/Ruxos/ulib/ruxmusl/install_riscv64_release/include -O0  -march=rv64gc -mabi=lp64d -mcmodel=medany  -c -o apps/c/fork//main.o apps/c/fork//main.c[0m
+    [96;1mLinking[0m apps/c/fork//fork_riscv64-qemu-virt.elf
+[37mrust-lld -flavor gnu[0m [90m-nostdlib -static -no-pie --gc-sections -T/home/warth/code/Ruxos/modules/ruxhal/linker_riscv64-qemu-virt.lds ulib/ruxmusl/install_riscv64_release/lib/libc.a target/riscv64gc-unknown-none-elf/release/libruxmusl.a /home/warth/code/cross_compiler/riscv64-linux-musl-cross/bin/../lib/gcc/riscv64-linux-musl/11.2.1/libgcc.a apps/c/fork//main.o -o apps/c/fork//fork_riscv64-qemu-virt.elf[0m
+[37mrust-objcopy --binary-architecture=riscv64[0m [90mapps/c/fork//fork_riscv64-qemu-virt.elf --strip-all -O binary apps/c/fork//fork_riscv64-qemu-virt.bin[0m
+    [96;1mRunning[0m on qemu...
+[37mqemu-system-riscv64[0m [90m-m 2G -smp 1 -machine virt -bios /home/warth/code/Ruxos/patches/opensbi/build/platform/generic/firmware/fw_dynamic.bin -kernel apps/c/fork//fork_riscv64-qemu-virt.bin -append ";;" -fsdev local,id=myid,path=./,security_model=none -device virtio-9p-device,fsdev=myid,mount_tag=rootfs -nographic[0m
+
+OpenSBI v1.4-53-g76345f7
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name             : riscv-virtio,qemu
+Platform Features         : medeleg
+Platform HART Count       : 1
+Platform IPI Device       : aclint-mswi
+Platform Timer Device     : aclint-mtimer @ 10000000Hz
+Platform Console Device   : uart8250
+Platform HSM Device       : ---
+Platform PMU Device       : ---
+Platform Reboot Device    : syscon-reboot
+Platform Shutdown Device  : syscon-poweroff
+Platform Suspend Device   : ---
+Platform CPPC Device      : ---
+Firmware Base             : 0x80000000
+Firmware Size             : 323 KB
+Firmware RW Offset        : 0x40000
+Firmware RW Size          : 67 KB
+Firmware Heap Offset      : 0x48000
+Firmware Heap Size        : 35 KB (total), 2 KB (reserved), 10 KB (used), 22 KB (free)
+Firmware Scratch Size     : 4096 B (total), 336 B (used), 3760 B (free)
+Runtime SBI Version       : 2.0
+
+Domain0 Name              : root
+Domain0 Boot HART         : 0
+Domain0 HARTs             : 0*
+Domain0 Region00          : 0x0000000000100000-0x0000000000100fff M: (I,R,W) S/U: (R,W)
+Domain0 Region01          : 0x0000000010000000-0x0000000010000fff M: (I,R,W) S/U: (R,W)
+Domain0 Region02          : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region03          : 0x0000000080040000-0x000000008005ffff M: (R,W) S/U: ()
+Domain0 Region04          : 0x0000000080000000-0x000000008003ffff M: (R,X) S/U: ()
+Domain0 Region05          : 0x000000000c400000-0x000000000c5fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region06          : 0x000000000c000000-0x000000000c3fffff M: (I,R,W) S/U: (R,W)
+Domain0 Region07          : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address      : 0x0000000080200000
+Domain0 Next Arg1         : 0x00000000bfe00000
+Domain0 Next Mode         : S-mode
+Domain0 SysReset          : yes
+Domain0 SysSuspend        : yes
+
+Boot HART ID              : 0
+Boot HART Domain          : root
+Boot HART Priv Version    : v1.12
+Boot HART Base ISA        : rv64imafdch
+Boot HART ISA Extensions  : sstc,zicntr,zihpm,zicboz,zicbom,sdtrig
+Boot HART PMP Count       : 16
+Boot HART PMP Granularity : 2 bits
+Boot HART PMP Address Bits: 54
+Boot HART MHPM Info       : 16 (0x0007fff8)
+Boot HART Debug Triggers  : 2 triggers
+Boot HART MIDELEG         : 0x0000000000001666
+Boot HART MEDELEG         : 0x0000000000f0b509
+
+8888888b.                     .d88888b.   .d8888b.
+888   Y88b                   d88P" "Y88b d88P  Y88b
+888    888                   888     888 Y88b.
+888   d88P 888  888 888  888 888     888  "Y888b.
+8888888P"  888  888 `Y8bd8P' 888     888     "Y88b.
+888 T88b   888  888   X88K   888     888       "888
+888  T88b  Y88b 888 .d8""8b. Y88b. .d88P Y88b  d88P
+888   T88b  "Y88888 888  888  "Y88888P"   "Y8888P"
+
+arch = riscv64
+platform = riscv64-qemu-virt
+target = riscv64gc-unknown-none-elf
+smp = 1
+build_mode = release
+log_level = debug
+
+[37m[  0.063428 0 ruxruntime:173] [32mLogging is enabled.[m
+[m[37m[  0.064899 0 ruxruntime:381] [32mInitialize global memory allocator...[m
+[m[37m[  0.065607 0 ruxruntime:382] [32m  use slab allocator.[m
+[m[37m[  0.066579 0 axalloc:221] [36minitialize global allocator at: [0xffffffc08034d000, 0xffffffc100000000)[m
+[m[37m[  0.070003 0 ruxruntime:181] [32mPrimary CPU 0 started, dtb = 0xbfe00000.[m
+[m[37m[  0.070774 0 ruxruntime:183] [32mFound physcial memory regions:[m
+[m[37m[  0.071758 0 ruxruntime:185] [32m  [PA:0x80200000, PA:0x8028d000) .text (READ | EXECUTE | RESERVED)[m
+[m[37m[  0.072914 0 ruxruntime:185] [32m  [PA:0x8028d000, PA:0x802a7000) .rodata (READ | RESERVED)[m
+[m[37m[  0.073773 0 ruxruntime:185] [32m  [PA:0x802a7000, PA:0x802aa000) .data .tdata .tbss .percpu (READ | WRITE | RESERVED)[m
+[m[37m[  0.074942 0 ruxruntime:185] [32m  [PA:0x802aa000, PA:0x8032a000) boot stack (READ | WRITE | RESERVED)[m
+[m[37m[  0.076295 0 ruxruntime:185] [32m  [PA:0x8032a000, PA:0x8034d000) .bss (READ | WRITE | RESERVED)[m
+[m[37m[  0.077261 0 ruxruntime:185] [32m  [PA:0x8034d000, PA:0x100000000) free memory (READ | WRITE | EXECUTE | FREE)[m
+[m[37m[  0.078261 0 ruxruntime:185] [32m  [PA:0xc000000, PA:0xc210000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.079159 0 ruxruntime:185] [32m  [PA:0x10000000, PA:0x10001000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.080028 0 ruxruntime:185] [32m  [PA:0x10001000, PA:0x10009000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.080898 0 ruxruntime:185] [32m  [PA:0x30000000, PA:0x40000000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.081771 0 ruxruntime:185] [32m  [PA:0x40000000, PA:0x80000000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.084041 0 axalloc:127] [36mexpand heap memory: [0xffffffc080355000, 0xffffffc080365000)[m
+[m[37m[  0.085092 0 axalloc:127] [36mexpand heap memory: [0xffffffc080365000, 0xffffffc080385000)[m
+[m[37m[  0.086026 0 axalloc:127] [36mexpand heap memory: [0xffffffc080385000, 0xffffffc0803c5000)[m
+[m[37m[  0.087123 0 axalloc:127] [36mexpand heap memory: [0xffffffc0803c5000, 0xffffffc080445000)[m
+[m[37m[  0.090000 0 ruxruntime:196] [32mInitialize platform devices...[m
+[m[37m[  0.091312 0 ruxtask::api:77] [32mInitialize scheduling...[m
+[m[37m[  0.095221 0 ruxtask::task:632] [36mnew init task: Task(1, "main")[m
+[m[37m[  0.096366 0 ruxtask::task:325] [36mset_stack_top: begin=0xffffffc0802aa000, size=0x80000[m
+[m[37m[  0.098567 0 ruxtask::task:227] [36mnew_common: process_id=Task(1, "main"), name=2[m
+[m[37m[  0.100304 0 ruxtask::task:375] [36mnew task: Task(2, "idle")[m
+[m[37m[  0.101606 0 ruxtask::task:227] [36mnew_common: process_id=Task(1, "main"), name=3[m
+[m[37m[  0.102905 0 ruxtask::task:375] [36mnew task: Task(3, "gc")[m
+[m[37m[  0.103937 0 axalloc:127] [36mexpand heap memory: [0xffffffc080446000, 0xffffffc080646000)[m
+[m[37m[  0.106097 0 ruxtask::api:85] [32m  use Round-robin scheduler.[m
+[m[37m[  0.107271 0 ruxruntime:212] [32mInitialize kernel page table...[m
+[m[37m[  0.110058 0 ruxdriver:168] [32mInitialize device drivers...[m
+[m[37m[  0.111461 0 ruxdriver:169] [32m  device model: dyn[m
+[m[37m[  0.112414 0 ruxdriver::drivers:53] [36mmmc probe[m
+[m[37m[  0.113381 0 axalloc:127] [36mexpand heap memory: [0xffffffc08064b000, 0xffffffc080a4b000)[m
+[m[37m[  0.117589 0 ruxdriver:138] [32mregistered a new Net device: "loopback"[m
+[m[37m[  0.119978 0 virtio_drivers::device::v9p:30] [32mdevice features: VIRTIO_9P_F_MOUNT_TAG[m
+[m[37m[  0.123405 0 ruxdriver::bus::mmio:27] [32mregistered a new _9P device at [PA:0x10008000, PA:0x10009000): "virtio-9p"[m
+[m[37m[  0.125133 0 ruxdriver:176] [36mnumber of NICs: 1[m
+[m[37m[  0.126063 0 ruxdriver:179] [36m  NIC 0: "loopback"[m
+[m[37m[  0.126942 0 ruxdriver:184] [36mnumber of block devices: 0[m
+[m[37m[  0.127858 0 ruxdriver:200] [36mnumber of 9p devices: 1[m
+[m[37m[  0.128791 0 ruxdriver:203] [36m  9p device 0: "virtio-9p"[m
+[m[37m[  0.129720 0 ruxnet:68] [32mInitialize network subsystem...[m
+[m[37m[  0.130589 0 ruxnet:74] [32m  net stack: smoltcp[m
+[m[37m[  0.131553 0 axalloc:127] [36mexpand heap memory: [0xffffffc080a4d000, 0xffffffc08124d000)[m
+[m[37m[  0.138146 0 ruxnet:83] [32m  use NIC: "loopback"[m
+[m[37m[  0.139928 0 ruxnet::smoltcp_impl:365] [32mcreated net interface "loopback":[m
+[m[37m[  0.140963 0 ruxnet::smoltcp_impl:366] [32m  ether:    00-00-00-00-00-00[m
+[m[37m[  0.142292 0 ruxnet::smoltcp_impl:367] [32m  ip:       127.0.0.1/24[m
+[m[37m[  0.143704 0 rux9p:51] [32mInitialize virtio 9pfs...[m
+[m[37m[  0.144554 0 rux9p:54] [32m  use 9pfs device 0: "virtio-9p"[m
+[m[37m[  0.145390 0 rux9p::drv:45] [32m9p dev init success[m
+[m[37m[  0.148177 0 rux9p::fs:49] [32m9pfs server's protocol: 9P2000.L[m
+[m[37m[  0.155137 0 axfs_ramfs::dir:64] [31mAlreadyExists sys[m
+[m[37m[  0.156283 0 ruxfs::mounts:79] [36msysfs: Ok(VfsNodeAttr { ino: 0, mode: VfsNodePerm(OWNER_READ | OWNER_WRITE | OWNER_EXEC | GROUP_READ | GROUP_EXEC | OTHER_READ | OTHER_EXEC), ty: Dir, size: 4096, blocks: 0 })[m
+[m[37m[  0.161307 0 ruxtask::fs:118] [32mmounting /dev[m
+[m[37m[  0.162157 0 rux9p::fs:461] [36mlookup 9pfs: dev[m
+[m[37m[  0.164965 0 rux9p::fs:401] [36mget_attr Ok(FileAttr { vaild: 6143, qid: _9PQid { ftype: 128, version: 1743857047, path: 2385386 }, mode: 16877, n_link: 2, uid: 1000, gid: 1000, rdev: 0, size: 4096, blk_size: 4096, n_blk: 8, atime_sec: 1743416799, atime_ns: 972012196, mtime_sec: 1742808471, mtime_ns: 24788028, ctime_sec: 1742808471, ctime_ns: 24788028, btime_sec: 0, btime_ns: 0, gen: 28483931, date_version: 0 })[m
+[m[37m[  0.169659 0 rux9p::fs:466] [36m9pfs reading dirents: start_idx = 0[m
+[m[37m[  0.171873 0 rux9p::fs:510] [36m9pfs read dirents finished: start_idx = 0[m
+[m[37m[  0.173653 0 rux9p::fs:461] [36mlookup 9pfs: dev[m
+[m[37m[  0.175366 0 ruxtask::fs:118] [32mmounting /tmp[m
+[m[37m[  0.175944 0 rux9p::fs:461] [36mlookup 9pfs: tmp[m
+[m[37m[  0.176913 0 rux9p::fs:401] [36mget_attr Ok(FileAttr { vaild: 6143, qid: _9PQid { ftype: 128, version: 1743857047, path: 2385387 }, mode: 16877, n_link: 2, uid: 1000, gid: 1000, rdev: 0, size: 4096, blk_size: 4096, n_blk: 8, atime_sec: 1743416799, atime_ns: 972012196, mtime_sec: 1742808471, mtime_ns: 32788129, ctime_sec: 1742808471, ctime_ns: 32788129, btime_sec: 0, btime_ns: 0, gen: 3446829827, date_version: 0 })[m
+[m[37m[  0.180421 0 rux9p::fs:466] [36m9pfs reading dirents: start_idx = 0[m
+[m[37m[  0.181334 0 rux9p::fs:510] [36m9pfs read dirents finished: start_idx = 0[m
+[m[37m[  0.182183 0 rux9p::fs:461] [36mlookup 9pfs: tmp[m
+[m[37m[  0.183445 0 ruxtask::fs:118] [32mmounting /proc[m
+[m[37m[  0.183947 0 rux9p::fs:461] [36mlookup 9pfs: proc[m
+[m[37m[  0.184899 0 rux9p::fs:401] [36mget_attr Ok(FileAttr { vaild: 6143, qid: _9PQid { ftype: 128, version: 1743857047, path: 2385388 }, mode: 16877, n_link: 2, uid: 1000, gid: 1000, rdev: 0, size: 4096, blk_size: 4096, n_blk: 8, atime_sec: 1743416799, atime_ns: 972012196, mtime_sec: 1742808471, mtime_ns: 37788193, ctime_sec: 1742808471, ctime_ns: 37788193, btime_sec: 0, btime_ns: 0, gen: 3777875095, date_version: 0 })[m
+[m[37m[  0.188239 0 rux9p::fs:466] [36m9pfs reading dirents: start_idx = 0[m
+[m[37m[  0.189110 0 rux9p::fs:510] [36m9pfs read dirents finished: start_idx = 0[m
+[m[37m[  0.189940 0 rux9p::fs:461] [36mlookup 9pfs: proc[m
+[m[37m[  0.190831 0 ruxtask::fs:118] [32mmounting /sys[m
+[m[37m[  0.191306 0 rux9p::fs:461] [36mlookup 9pfs: sys[m
+[m[37m[  0.192149 0 rux9p::fs:401] [36mget_attr Ok(FileAttr { vaild: 6143, qid: _9PQid { ftype: 128, version: 1743857047, path: 2385389 }, mode: 16877, n_link: 2, uid: 1000, gid: 1000, rdev: 0, size: 4096, blk_size: 4096, n_blk: 8, atime_sec: 1743416799, atime_ns: 969012074, mtime_sec: 1742808471, mtime_ns: 44788281, ctime_sec: 1742808471, ctime_ns: 44788281, btime_sec: 0, btime_ns: 0, gen: 943973860, date_version: 0 })[m
+[m[37m[  0.195833 0 rux9p::fs:466] [36m9pfs reading dirents: start_idx = 0[m
+[m[37m[  0.196813 0 rux9p::fs:510] [36m9pfs read dirents finished: start_idx = 0[m
+[m[37m[  0.197827 0 rux9p::fs:461] [36mlookup 9pfs: sys[m
+[m[37m[  0.198863 0 ruxtask::fs:118] [32mmounting /etc[m
+[m[37m[  0.199393 0 rux9p::fs:461] [36mlookup 9pfs: etc[m
+[m[37m[  0.200509 0 rux9p::fs:401] [36mget_attr Ok(FileAttr { vaild: 6143, qid: _9PQid { ftype: 128, version: 1743857047, path: 2385390 }, mode: 16877, n_link: 2, uid: 1000, gid: 1000, rdev: 0, size: 4096, blk_size: 4096, n_blk: 8, atime_sec: 1743416799, atime_ns: 972012196, mtime_sec: 1742808471, mtime_ns: 49788345, ctime_sec: 1742808471, ctime_ns: 49788345, btime_sec: 0, btime_ns: 0, gen: 3876696829, date_version: 0 })[m
+[m[37m[  0.204555 0 rux9p::fs:466] [36m9pfs reading dirents: start_idx = 0[m
+[m[37m[  0.205649 0 rux9p::fs:510] [36m9pfs read dirents finished: start_idx = 0[m
+[m[37m[  0.206653 0 rux9p::fs:461] [36mlookup 9pfs: etc[m
+[m[37m[  0.208228 0 ruxos_posix_api::imp::fs:34] [36minit initial process's fd_table[m
+[m[37m[  0.209807 0 ruxruntime:267] [32mInitialize interrupt handlers...[m
+[m[37m[  0.211712 0 ruxruntime:277] [32mPrimary CPU 0 init OK.[m
+[m[37m[  0.213658 0:1 ruxruntime:292] [32mmemory base: 0x0, memory size: 0x0[m
+[m[37m[  0.215174 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: SET_TID_ADDRESS[m
+[m[37m[  0.216200 0:1 ruxos_posix_api::imp::pthread:471] [36mset_tid_address <= addr: 0xffffffc08032a084[m
+[m[37m[  0.217368 0:1 ruxos_posix_api::imp::pthread:470] [36msys_set_tid_address => Ok(1)[m
+[m[37m[  0.218716 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.219657 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 0, sigsetsize: 8[m
+[m[37m[  0.220776 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.222109 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.222972 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 0, sigsetsize: 8[m
+[m[37m[  0.224029 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.224952 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: CLONE[m
+[m[37m[  0.225963 0:1 ruxos_posix_api::imp::pthread:351] [36msys_clone <= flags: 11, stack: 0x0, ctid: ffffffc08032a080[m
+[m[37m[  0.227632 0:1 ruxtask::task:414] [36mfork: current_stack_top=VA:0xffffffc08032a000, stack_size=0x80000[m
+[m[37m[  0.354448 0:1 ruxtask::task:552] [36mnew task forked: Task(4, "main")[m
+[m[37m[  0.359812 0:1 ruxtask::run_queue:51] [36mtask spawn: Task(4, "main")[m
+[m[37m[  0.360554 0:1 ruxos_posix_api::imp::pthread:403] [36mwill sys_clone <= pid: 4[m
+[m[37m[  0.361163 0:1 ruxos_posix_api::imp::pthread:356] [36msys_clone => Ok(4)[m
+[m[37m[  0.362395 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.363573 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.364999 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.366298 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.366983 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.367484 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.368441 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.369058 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 0, sigsetsize: 8[m
+[m[37m[  0.369710 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.370243 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.371092 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 0, sigsetsize: 8[m
+[m[37m[  0.372481 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.373922 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: CLONE[m
+[m[37m[  0.374832 0:1 ruxos_posix_api::imp::pthread:351] [36msys_clone <= flags: 11, stack: 0x0, ctid: ffffffc08032a080[m
+[m[37m[  0.375371 0:1 ruxtask::task:414] [36mfork: current_stack_top=VA:0xffffffc08032a000, stack_size=0x80000[m
+[m[37m[  0.499592 0:1 ruxtask::task:552] [36mnew task forked: Task(5, "main")[m
+[m[37m[  0.505938 0:1 ruxtask::run_queue:51] [36mtask spawn: Task(5, "main")[m
+[m[37m[  0.507619 0:1 ruxos_posix_api::imp::pthread:403] [36mwill sys_clone <= pid: 5[m
+[m[37m[  0.508653 0:1 ruxos_posix_api::imp::pthread:356] [36msys_clone => Ok(5)[m
+[m[37m[  0.510265 0:1 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(1, "main"), allow=true[m
+[m[37m[  0.512750 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(3, "gc")[m
+[m[37m[  0.514419 0:3 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.516329 0:3 ruxtask::run_queue:133] [36mtask block: Task(3, "gc")[m
+[m[37m[  0.517646 0:3 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.519074 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.521244 0:4 ruxos_posix_api::imp::pthread:403] [36mwill sys_clone <= pid: 0[m
+[m[37m[  0.522813 0:4 ruxos_posix_api::imp::pthread:356] [36msys_clone => Ok(0)[m
+[m[37m[  0.523893 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETTID[m
+[m[37m[  0.525116 0:4 ruxos_posix_api::imp::task:36] [36msys_gettid => Ok(4)[m
+[m[37m[  0.526402 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.527517 0:4 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.528849 0:4 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.530111 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.531220 0:4 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.532526 0:4 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.533746 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETPID[m
+[m[37m[  0.534943 0:4 ruxos_posix_api::imp::task:55] [36msys_getpid => Ok(4)[m
+[m[37m[  0.536034 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETPPID[m
+[m[37m[  0.537341 0:4 ruxos_posix_api::imp::task:68] [36msys_getppid => Ok(1)[m
+[m[37m[  0.539818 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: IOCTL[m
+[m[37m[  0.541062 0:4 ruxos_posix_api::imp::ioctl:19] [36msys_ioctl <= fd: 1, request: 21523[m
+[m[37m[  0.543054 0:4 ruxos_posix_api::imp::ioctl:20] [36msys_ioctl => Ok(0)[m
+[m[37m[  0.544398 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.545588 0:4 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.546956 0:4 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08032a278 52[m
+[m----------------Child process (PID: 4, Parent PID: 1[37m[  0.549227 0:4 ruxos_posix_api::imp::io:50] [36msys_write => Ok(52)[m
+[m[37m[  0.550633 0:4 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08028d03e 2[m
+[m)
+[37m[  0.552049 0:4 ruxos_posix_api::imp::io:50] [36msys_write => Ok(2)[m
+[m[37m[  0.553261 0:4 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(54)[m
+[m[37m[  0.559898 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.561450 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(5, "main")[m
+[m[37m[  0.563048 0:5 ruxtask::run_queue:247] [36mroot_paddr:PA:0x818d4000[m
+[m[37m[  0.564397 0:5 ruxos_posix_api::imp::pthread:403] [36mwill sys_clone <= pid: 0[m
+[m[37m[  0.565551 0:5 ruxos_posix_api::imp::pthread:356] [36msys_clone => Ok(0)[m
+[m[37m[  0.566622 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETTID[m
+[m[37m[  0.567646 0:5 ruxos_posix_api::imp::task:36] [36msys_gettid => Ok(5)[m
+[m[37m[  0.568662 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.569826 0:5 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.571326 0:5 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.572668 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.573780 0:5 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.575087 0:5 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.576263 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETPID[m
+[m[37m[  0.577282 0:5 ruxos_posix_api::imp::task:55] [36msys_getpid => Ok(5)[m
+[m[37m[  0.578301 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETPPID[m
+[m[37m[  0.579320 0:5 ruxos_posix_api::imp::task:68] [36msys_getppid => Ok(1)[m
+[m[37m[  0.580537 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.581529 0:5 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.582537 0:5 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08032a278 36[m
+[mChild process (PID: 5, Parent PID: 1[37m[  0.583903 0:5 ruxos_posix_api::imp::io:50] [36msys_write => Ok(36)[m
+[m[37m[  0.584762 0:5 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08028d0a6 2[m
+[m)
+[37m[  0.585776 0:5 ruxos_posix_api::imp::io:50] [36msys_write => Ok(2)[m
+[m[37m[  0.586564 0:5 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(38)[m
+[m[37m[  0.587488 0:5 ruxmusl::riscv64:8] [36msyscall <= syscall_name: NANO_SLEEP[m
+[m[37m[  0.588660 0:5 ruxos_posix_api::imp::time:154] [36msys_nanosleep <= 1.000000000s[m
+[m[37m[  0.589934 0:5 ruxtask::run_queue:164] [36mtask sleep: Task(5, "main"), deadline=1.5896434s[m
+[m[37m[  0.592207 0:5 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.593373 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.594393 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.595231 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.596133 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.596911 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: RT_SIGPROCMASK[m
+[m[37m[  0.597675 0:1 ruxos_posix_api::imp::rt_sig:60] [36msys_rt_sigprocmask <= flag: 2, sigsetsize: 8[m
+[m[37m[  0.598598 0:1 ruxos_posix_api::imp::rt_sig:65] [36msys_rt_sigprocmask => Ok(0)[m
+[m[37m[  0.599369 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETPID[m
+[m[37m[  0.600057 0:1 ruxos_posix_api::imp::task:55] [36msys_getpid => Ok(1)[m
+[m[37m[  0.600891 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.601541 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.602251 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08032a278 50[m
+[mParent process (PID: 1), waiting for child (PID: 5[37m[  0.603386 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(50)[m
+[m[37m[  0.604012 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08028d104 2[m
+[m)
+[37m[  0.604752 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(2)[m
+[m[37m[  0.605346 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(52)[m
+[m[37m[  0.606010 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WAIT4[m
+[m[37m[  0.606791 0:1 ruxos_posix_api::imp::task:90] [36msys_wait4 <= pid: -1, wstatus: 0x4, options: 0, rusage: 0x0[m
+[m[37m[  0.608032 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.608698 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.649798 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.650496 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.651161 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.651714 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.652406 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.699902 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.700712 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.701422 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.701994 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.702661 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.749965 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.751500 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.752878 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.753951 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.755381 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.799875 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.801397 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.802759 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.803814 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.805182 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.849809 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.850361 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.850897 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.851329 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.851933 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.899996 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.901612 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.903060 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.904392 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.905844 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.950039 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  0.951842 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.953198 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  0.954274 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  0.955654 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  0.999985 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.001598 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.002965 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.004040 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.005410 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.049870 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.051375 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.052734 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.053852 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.055286 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.099874 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.101313 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.102578 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.103572 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.104852 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.149793 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.150524 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.151224 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.151748 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.152430 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.199812 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.200456 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.201037 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.201549 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.202248 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.249791 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.250397 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.251064 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.251565 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.252194 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.299894 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.301423 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.302771 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.303832 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.305280 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.349782 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.350290 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.350869 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.351341 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.351955 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.399829 0:4 ruxtask::run_queue:95] [36mcurrent task is to be preempted: Task(4, "main"), allow=true[m
+[m[37m[  1.400372 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.400912 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.401366 0:1 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(4, "main")[m
+[m[37m[  1.401967 0:4 ruxtask::run_queue:247] [36mroot_paddr:PA:0x8124d000[m
+[m[37m[  1.407640 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: GETPID[m
+[m[37m[  1.408100 0:4 ruxos_posix_api::imp::task:55] [36msys_getpid => Ok(4)[m
+[m[37m[  1.408490 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  1.409036 0:4 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  1.409608 0:4 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08032a278 19[m
+[mChile process(PID:4[37m[  1.410380 0:4 ruxos_posix_api::imp::io:50] [36msys_write => Ok(19)[m
+[m[37m[  1.410908 0:4 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08028d05c 13[m
+[m) exiting...
+[37m[  1.411610 0:4 ruxos_posix_api::imp::io:50] [36msys_write => Ok(13)[m
+[m[37m[  1.412108 0:4 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(32)[m
+[m[37m[  1.412820 0:4 ruxmusl::riscv64:8] [36msyscall <= syscall_name: EXIT_GROUP[m
+[m[37m[  1.413387 0:4 ruxos_posix_api::imp::pthread:241] [36msys_exit_group <= status: 0[m
+[m[37m[  1.415354 0:4 ruxtask::run_queue:110] [36mtask exit: Task(4, "main"), exit_code=0[m
+[m[37m[  1.416890 0:4 ruxtask::run_queue:149] [36mtask unblock: Task(3, "gc")[m
+[m[37m[  1.417358 0:4 ruxtask::task:951] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  1.418082 0:1 ruxtask::run_queue:247] [36mroot_paddr:PA:0x80445000[m
+[m[37m[  1.418955 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.419535 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.421082 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.422156 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.423471 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.424525 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.425178 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.425618 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.426965 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.428021 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.429327 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.430382 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.431696 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.432760 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.433258 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.433636 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.434280 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.434786 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.435365 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.435856 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.436444 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.436916 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.437488 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.438435 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.439764 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.440827 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.441285 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.441732 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.442562 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.443108 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.443746 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.444225 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.444821 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.445286 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.445862 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.446312 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.447264 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.448324 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.449643 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.450218 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.450869 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.451518 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.452184 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.452782 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.454100 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.455157 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.456470 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.457528 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.458207 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.458578 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.459298 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.460081 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.461396 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.462458 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.463788 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.464849 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.465979 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.466351 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.466925 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.467471 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.468120 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.468624 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.469207 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.469672 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.470263 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.470735 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.471299 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.471761 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.472344 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.473023 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.474342 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.475027 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.475525 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.476423 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.477763 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.478836 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.480151 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.481211 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.482531 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.483175 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.483636 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.484145 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.484771 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.485258 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.486103 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.487164 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.488481 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.489548 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.490884 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.491947 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.493267 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.494327 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.495639 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.496696 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.498028 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.499115 0:1 ruxos_posix_api::imp::mmap::trap:231] [33mvaddr=0x4,cause=WRITE[m
+[m[37m[  1.500434 0:1 ruxos_posix_api::imp::mmap::trap:50] [36mNone[m
+[m[37m[  1.501495 [m[37

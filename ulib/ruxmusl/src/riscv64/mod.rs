@@ -1,12 +1,12 @@
 pub mod syscall_id;
 
 use core::ffi::c_int;
-use ruxos_posix_api::ctypes;
+use ruxos_posix_api::ctypes::{self, pid_t};
 use syscall_id::SyscallId;
 
 pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
     debug!("syscall <= syscall_name: {:?}", syscall_id);
-
+    
     unsafe {
         match syscall_id {
             SyscallId::INVALID => ruxos_posix_api::sys_invalid(syscall_id as usize as c_int) as _,
@@ -386,6 +386,9 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[2] as *const ctypes::rlimit,
                 args[3] as *mut ctypes::rlimit,
             ) as _,
+            #[cfg(feature = "signal")]
+            SyscallId::KILL => ruxos_posix_api::sys_kill(args[0] as pid_t, args[1] as c_int) as _,
+            SyscallId::GETPGID => ruxos_posix_api::sys_getpgid(args[0] as pid_t) as _,
         }
     }
 }

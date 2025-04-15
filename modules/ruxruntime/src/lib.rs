@@ -49,6 +49,7 @@ mod mp;
 #[cfg(feature = "smp")]
 pub use self::mp::rust_main_secondary;
 
+use ruxhal::arch::irqs_enabled;
 #[cfg(feature = "signal")]
 use ruxtask::signal::Signal;
 
@@ -138,6 +139,7 @@ static INITED_CPUS: AtomicUsize = AtomicUsize::new(0);
 fn is_init_ok() -> bool {
     INITED_CPUS.load(Ordering::Acquire) == ruxconfig::SMP
 }
+
 
 /// The main entry point of the Ruxos runtime.
 ///
@@ -281,6 +283,7 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
         core::hint::spin_loop();
     }
 
+    // debug!("enable:{}",irqs_enabled());
     // environ variables and Command line parameters initialization
     #[cfg(feature = "alloc")]
     unsafe {

@@ -7,12 +7,15 @@
  *   See the Mulan PSL v2 for more details.
  */
 
+use core::arch::asm;
+
 #[cfg(feature = "fs")]
 use crate::fs::get_file_like;
 use alloc::collections::VecDeque;
 use alloc::sync::Arc;
 use axerrno::LinuxResult;
 use lazy_init::LazyInit;
+use log::warn;
 use ruxfdtable::RUX_FILE_LIMIT;
 use scheduler::BaseScheduler;
 use spinlock::SpinNoIrq;
@@ -34,6 +37,10 @@ static IDLE_TASK: LazyInit<AxTaskRef> = LazyInit::new();
 // 有理由认为任务调度的功能是由这个结构实现的
 pub(crate) struct AxRunQueue {
     scheduler: Scheduler,
+}
+
+extern "C"{
+    fn pan();
 }
 
 impl AxRunQueue {
@@ -67,7 +74,17 @@ impl AxRunQueue {
 
     // 这个函数只是打印了一个信息并调用了resched方法
     pub fn yield_current(&mut self) {
+        unsafe {
+            pan();
+        }
+        
         let curr = crate::current();
+        // unsafe {
+        //     asm!("
+        //         csrr a3,sie
+        //         csrr a4,sip
+        //     ");
+        // }
         trace!("task yield: {}", curr.id_name());
         assert!(curr.is_running());
         self.resched(false);
@@ -146,7 +163,7 @@ impl AxRunQueue {
 
     // 这里可以看出，本结构体应该是存储就绪态的task,如果你对某个任务解除阻塞，那么就会进入本队列中
     pub fn unblock_task(&mut self, task: AxTaskRef, resched: bool) {
-        debug!("task unblock: {}", task.id_name());
+        warn!("task unblock: {}", task.id_name());
         if task.is_blocked() {
             task.set_state(TaskState::Ready);
             self.scheduler.add_task(task); // TODO: priority
@@ -191,11 +208,13 @@ impl AxRunQueue {
                     .put_prev_task(prev.clone_as_taskref(), preempt);
             }
         }
+        
         // 从调度器中得到一个任务，从调度器中得到的任务会被移出调度器
         let next = self.scheduler.pick_next_task().unwrap_or_else(|| unsafe {
             // Safety: IRQs must be disabled at this time.
             IDLE_TASK.current_ref_raw().get_unchecked().clone()
         });
+        // debug!("114514:{:?}->{:?}",prev.id(),next.id());
         // 调度器的部分结束之后，会进入switch to代码
         self.switch_to(prev, next);
     }

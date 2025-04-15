@@ -20,8 +20,16 @@ static TIMER_LIST: LazyInit<SpinNoIrq<TimerList<TaskWakeupEvent>>> = LazyInit::n
 
 struct TaskWakeupEvent(AxTaskRef);
 
+extern "C"{
+    fn pan();
+}
+
 impl TimerEvent for TaskWakeupEvent {
     fn callback(self, _now: TimeValue) {
+        // debug!("114514");
+        unsafe {
+            pan();
+        }
         let mut rq = RUN_QUEUE.lock();
         self.0.set_in_timer_list(false);
         rq.unblock_task(self.0, true);

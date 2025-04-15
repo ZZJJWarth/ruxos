@@ -9,7 +9,7 @@
 
 use riscv::register::scause::{self, Exception as E, Trap};
 
-use super::TrapFrame;
+use super::{disable_irqs, enable_irqs, TrapFrame};
 
 use crate::arch::riscv::gp;
 
@@ -34,6 +34,8 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
         Trap::Interrupt(_) => crate::trap::handle_irq_extern(scause.bits()),
         #[cfg(feature = "musl")]
         Trap::Exception(E::UserEnvCall) => {
+            #[cfg(feature = "irq")]
+            enable_irqs();
             let ret = crate::trap::handle_syscall(
                 tf.regs.a7,
                 [
@@ -46,6 +48,8 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
                 ],
             );
             tf.regs.a0 = ret as _;
+            #[cfg(feature = "irq")]
+            disable_irqs();
         }
         #[cfg(feature = "paging")]
         Trap::Exception(E::LoadPageFault) => {
