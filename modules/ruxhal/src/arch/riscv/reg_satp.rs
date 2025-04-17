@@ -1,7 +1,9 @@
 use core::ops::Add;
 
-use driver_virtio::PhysAddr;
+// use driver_virtio::PhysAddr;
 use riscv::register::satp;
+
+type PhysAddr = usize;
 
 use crate::arch;
 

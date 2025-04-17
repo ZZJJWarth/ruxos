@@ -7,10 +7,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+void pan(){
+
+}
 int main()
 {
     size_t length = 4096;
-    void *addr=(void *)0xffffffc080200000;
+    // void *addr=(void *)0xffffffc080200000;
     // 使用 mmap 映射匿名内存
     void *mapped_memory = mmap(NULL, length, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     void *mapped_memory1 = mmap(NULL, length, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -19,7 +22,7 @@ int main()
         return 1;
     }
 
-    printf("Memory mapped at address: %p\n", (int *)addr);
+    printf("Memory mapped at address: %p\n", (int *)mapped_memory);
 
     // char* i = ((char *)mapped_memory);
     

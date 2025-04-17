@@ -337,7 +337,7 @@ pub(crate) fn init() {
     let main_task = TaskInner::new_init("main".into());
     main_task.set_state(TaskState::Running);
     unsafe { CurrentTask::init_current(main_task) };
-
+    
     const IDLE_TASK_STACK_SIZE: usize = 4096;
     let idle_task = TaskInner::new(|| crate::run_idle(), "idle".into(), IDLE_TASK_STACK_SIZE);
     IDLE_TASK.with_current(|i| i.init_by(idle_task.clone()));

@@ -1,6 +1,6 @@
 pub mod syscall_id;
 
-use core::ffi::c_int;
+use core::ffi::{c_char, c_int, c_void};
 use ruxos_posix_api::ctypes::{self, pid_t};
 use syscall_id::SyscallId;
 
@@ -389,6 +389,9 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             #[cfg(feature = "signal")]
             SyscallId::KILL => ruxos_posix_api::sys_kill(args[0] as pid_t, args[1] as c_int) as _,
             SyscallId::GETPGID => ruxos_posix_api::sys_getpgid(args[0] as pid_t) as _,
+            SyscallId::BRK =>ruxos_posix_api::sys_brk(args[0] as *mut c_void) as _,
+            SyscallId::FACCESSAT => ruxos_posix_api::sys_faccessat(args[0] as c_int, args[1] as *const c_char, 
+                args[2] as c_int, args[3] as c_int) as _,
         }
     }
 }

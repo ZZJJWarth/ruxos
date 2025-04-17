@@ -30,6 +30,8 @@ pub enum SyscallId {
     #[cfg(feature = "fs")]
     RENAMEAT = 38,
     #[cfg(feature = "fs")]
+    FACCESSAT = 48,
+    #[cfg(feature = "fs")]
     FCHOWNAT = 54,
     #[cfg(feature = "fs")]
     OPENAT = 56,
@@ -121,6 +123,8 @@ pub enum SyscallId {
     SHUTDOWN = 210,
     #[cfg(feature = "net")]
     SENDMSG = 211,
+    #[cfg(feature = "alloc")]
+    BRK = 214,
     #[cfg(feature = "alloc")]
     MUNMAP = 215,
     #[cfg(feature = "alloc")]
