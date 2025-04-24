@@ -32,6 +32,8 @@ pub enum SyscallId {
     #[cfg(feature = "fs")]
     FACCESSAT = 48,
     #[cfg(feature = "fs")]
+    CHDIR = 49,
+    #[cfg(feature = "fs")]
     FCHOWNAT = 54,
     #[cfg(feature = "fs")]
     OPENAT = 56,

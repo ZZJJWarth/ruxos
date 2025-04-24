@@ -48,7 +48,29 @@ impl From<ctypes::stat> for RuxStat {
         }
     }
 
-    #[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+    #[cfg(target_arch = "riscv64")]
+    fn from(cstat: ctypes::stat) -> Self {
+        RuxStat {
+            st_dev: cstat.st_dev,
+            st_ino: cstat.st_ino,
+            st_mode: cstat.st_mode,
+            st_nlink: cstat.st_nlink,
+            st_uid: cstat.st_uid,
+            st_gid: cstat.st_gid,
+            st_rdev: cstat.st_rdev,
+            __pad: cstat.__pad,
+            st_size: cstat.st_size,
+            st_blksize: cstat.st_blksize,
+            __pad2: cstat.__pad2,
+            st_blocks: cstat.st_blocks,
+            st_atime: RuxTimeSpec::from(cstat.st_atim),
+            st_mtime: RuxTimeSpec::from(cstat.st_mtim),
+            st_ctime: RuxTimeSpec::from(cstat.st_ctim),
+            __unused: cstat.__unused,
+        }
+    }
+
+    #[cfg(any(target_arch = "x86_64"))]
     fn from(cstat: ctypes::stat) -> Self {
         RuxStat {
             st_dev: cstat.st_dev,
@@ -80,7 +102,7 @@ impl From<RuxTimeSpec> for ctypes::timespec {
 }
 
 impl From<RuxStat> for ctypes::stat {
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(any(target_arch = "aarch64"))]
     fn from(rstat: RuxStat) -> Self {
         ctypes::stat {
             st_dev: rstat.st_dev,
@@ -102,7 +124,29 @@ impl From<RuxStat> for ctypes::stat {
         }
     }
 
-    #[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+    #[cfg(target_arch="riscv64")]
+    fn from(rstat: RuxStat) -> Self {
+        ctypes::stat {
+            st_dev: rstat.st_dev,
+            st_ino: rstat.st_ino,
+            st_mode: rstat.st_mode,
+            st_nlink: rstat.st_nlink,
+            st_uid: rstat.st_uid,
+            st_gid: rstat.st_gid,
+            st_rdev: rstat.st_rdev,
+            __pad: rstat.__pad,
+            st_size: rstat.st_size,
+            st_blksize: rstat.st_blksize,
+            __pad2: rstat.__pad2,
+            st_blocks: rstat.st_blocks,
+            st_atim: rstat.st_atime.into(),
+            st_mtim: rstat.st_mtime.into(),
+            st_ctim: rstat.st_ctime.into(),
+            __unused: rstat.__unused,
+        }
+    }
+
+    #[cfg(any(target_arch = "x86_64"))]
     fn from(rstat: RuxStat) -> Self {
         ctypes::stat {
             st_dev: rstat.st_dev,

@@ -392,6 +392,8 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             SyscallId::BRK =>ruxos_posix_api::sys_brk(args[0] as *mut c_void) as _,
             SyscallId::FACCESSAT => ruxos_posix_api::sys_faccessat(args[0] as c_int, args[1] as *const c_char, 
                 args[2] as c_int, args[3] as c_int) as _,
+            #[cfg(feature = "fs")]
+            SyscallId::CHDIR => ruxos_posix_api::sys_chdir(args[0] as *const c_char) as _,
         }
     }
 }
