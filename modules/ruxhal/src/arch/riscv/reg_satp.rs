@@ -1,13 +1,9 @@
 use core::ops::Add;
-
-// use driver_virtio::PhysAddr;
 use riscv::register::satp;
 
 type PhysAddr = usize;
 
 use crate::arch;
-
-// const PPN_MASK:usize = 0xffff_ffff_fff0_0000;
 
 pub struct PPN(usize);
 
@@ -48,8 +44,6 @@ impl RegSatp{
         let asid:AddressSpaceID = asid.into();
         let physical_page_num:PPN = page_table_addr.into();
         mode | usize::from(asid) | usize::from(physical_page_num)
-        
     }
-
 }
 

@@ -74,41 +74,28 @@ pub fn sys_getppid() -> c_int {
         })
     }
 }
-extern "C"{
-    fn pan();
-}
 
 /// Wait for a child process to exit and return its status.
 ///
 /// TODO: part of options, and rusage are not implemented yet.
-#[no_mangle]
 #[cfg(feature = "multitask")]
-pub unsafe extern "C" fn sys_wait4(
+pub unsafe fn sys_wait4(
     pid: c_int,
     wstatus: *mut c_int,
     options: c_int,
     rusage: *mut ctypes::rusage,
 ) -> c_int {
-    use core::arch::asm;
-
-    use ruxhal::arch::irqs_enabled;
-
     const WNOHANG: c_int = 0x00000001;
 
     debug!(
         "sys_wait4 <= pid: {}, wstatus: {:?}, options: {}, rusage: {:?}",
         pid, wstatus, options, rusage
     );
-    asm!("
-        nop
-    ");
+    
     if pid > 0 {
         loop {
-            //如果大于0,则等待具体的pid，这里先获得process_map
             let mut process_map = PROCESS_MAP.lock();
-            //如果map里面有所给的pid
             if let Some(task) = process_map.get(&(pid as u64)) {
-                // 如果是exited的
                 if task.state() == ruxtask::task::TaskState::Exited {
                     if !wstatus.is_null() {
                         unsafe {
@@ -126,10 +113,6 @@ pub unsafe extern "C" fn sys_wait4(
             } else {
                 return -1; // No such process
             }
-            asm!("
-                nop
-                nop
-            ");
             // drop lock before yielding to other tasks
             drop(process_map);
             // for single-cpu system, we must yield to other tasks instead of dead-looping here.
@@ -138,11 +121,6 @@ pub unsafe extern "C" fn sys_wait4(
     } else if pid == -1 {
         let mut to_remove: Option<u64> = None;
         while to_remove.is_none() {
-            // loop {
-            //     unsafe {
-            //         pan();
-            //     }
-            // }
             let process_map = PROCESS_MAP.lock();
             for (child_pid, task) in process_map
                 .iter()

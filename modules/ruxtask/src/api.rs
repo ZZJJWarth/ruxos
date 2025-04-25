@@ -34,8 +34,8 @@ cfg_if::cfg_if! {
         pub(crate) type Scheduler = scheduler::CFScheduler<TaskInner>;
     } else {
         // If no scheduler features are set, use FIFO as the default.
-        pub(crate) type AxTask = scheduler::RRTask<TaskInner>;
-        pub(crate) type Scheduler = scheduler::RRScheduler<TaskInner>;
+        pub(crate) type AxTask = scheduler::FifoTask<TaskInner>;
+        pub(crate) type Scheduler = scheduler::FifoScheduler<TaskInner>;
     }
 }
 
@@ -253,10 +253,10 @@ pub fn exit(exit_code: i32) -> ! {
 pub fn run_idle() -> ! {
     loop {
         yield_now();
-        // debug!(
-            // "idle task[{}]: waiting for IRQs...",
-            // current().id().as_u64()
-        // );
+        debug!(
+            "idle task[{}]: waiting for IRQs...",
+            current().id().as_u64()
+        );
         #[cfg(feature = "irq")]
         ruxhal::arch::wait_for_irqs();
     }

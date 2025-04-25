@@ -130,18 +130,6 @@ impl TaskContext {
             unsafe { super::write_thread_pointer(next_ctx.tp) };
         }
 
-        // #[cfg(feature = "paging")]
-        // match page_table_addr{
-        //     Some(addr)=>{
-        //         use crate::arch::write_page_table_root;
-        //         if read_page_table_root()!=addr{
-        //             unsafe{write_page_table_root(addr);}                    
-        //         }
-        //     }
-        //     None=>{
-
-        //     }
-        // }
         let satp = RegSatp::new(riscv::register::satp::Mode::Sv39, 0, page_table_addr.into());
         unsafe {
             // TODO: switch FP states
@@ -193,10 +181,6 @@ unsafe fn save_current_context(_current_task:&mut TaskContext){
 unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
     // a0:src ; a1:dst ; a2:size
     asm!("
-        // addi    sp,sp,-16
-        // sd      a4,0(sp)
-        // sd      a5,8(sp)
-        // ebreak
         xor     a4,a4,a4
         add    a4,a4,a2
         start_copy:
@@ -206,9 +190,6 @@ unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
         addi    a1,a1,8
         addi    a4,a4,-8
         bnez    a4,start_copy
-        // ld      a4,0(sp)
-        // ld      a5,8(sp)
-        // addi    sp,sp,16
         ret
 
         ",
@@ -221,7 +202,7 @@ unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
 unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext,_page_table_addr:usize) {
     asm!(
         "
-        // save old context (callee-saved registerhs)
+        // save old context (callee-saved registers)
         STR     ra, a0, 0
         STR     sp, a0, 1
         STR     s0, a0, 2
@@ -245,7 +226,7 @@ unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task:
 set_satp_done:
 
 
-        // restore new cont
+        // restore new context
         LDR     s11, a1, 13
         LDR     s10, a1, 12
         LDR     s9, a1, 11

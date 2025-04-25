@@ -222,7 +222,7 @@ pub struct RuxStat {
 }
 
 ///Rust version for struct stat in ctypes. Represents file status information.
-#[cfg(any(target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 #[derive(Default)]
 pub struct RuxStat {
     /// Device identifier.

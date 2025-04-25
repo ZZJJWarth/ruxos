@@ -8,7 +8,6 @@
  */
 
 //! implementation of task structure and related functions.
-use crate::brk::BrkHeap;
 #[cfg(feature = "fs")]
 use crate::fs::FileSystem;
 use crate::vma::Vma;
@@ -89,7 +88,6 @@ pub struct TaskInner {
 
     stack_map_addr: SpinNoIrq<VirtAddr>,
 
-    /// kstack是一个被非中断自选锁锁住的，使用智能计数指针指向的TaskStack
     kstack: SpinNoIrq<Arc<Option<TaskStack>>>,
     ctx: UnsafeCell<TaskContext>,
 
@@ -118,7 +116,6 @@ pub struct TaskInner {
     #[cfg(feature = "paging")]
     /// memory management
     pub mm: Arc<MmapStruct>,
-    pub brk:Arc<SpinNoIrq<BrkHeap>>,
 
 }
 
@@ -272,7 +269,6 @@ impl TaskInner {
             fs: current().fs.clone(),
             #[cfg(feature = "paging")]
             mm: current().mm.clone(),
-            brk:current().brk.clone(),
         }
     }
 
@@ -322,7 +318,6 @@ impl TaskInner {
             fs: current().fs.clone(),
             #[cfg(feature = "paging")]
             mm: current().mm.clone(),
-            brk: current().brk.clone(),
         }
     }
 
@@ -410,17 +405,11 @@ impl TaskInner {
             arch::flush_tlb,
             mem::{direct_virt_to_phys, phys_to_virt},
         };
-        // 首先获得现在任务
         let current_task = crate::current();
-        // 获取current任务的名字
         let name = current_task.as_task_ref().name().to_string();
-        // 获取kstack的锁
         let current_stack_bindings = current_task.as_task_ref().kstack.lock();
-        // 获取kstack
         let current_stack = current_stack_bindings.as_ref().as_ref().unwrap();
-        // 获取kstack的top,这里top其实就是栈的起始点，因为栈都是向下增长的
         let current_stack_top = current_stack.top();
-        // 获取栈大小
         let stack_size = current_stack.layout.size();
         debug!(
             "fork: current_stack_top={:#x}, stack_size={:#x}",
@@ -429,14 +418,11 @@ impl TaskInner {
 
         #[cfg(feature = "paging")]
         // TODO: clone parent page table, and mark all unshared pages to read-only
-        // 获取了一个新的页表（有点困难）
         let mut cloned_page_table = PageTable::try_new().expect("failed to create page table");
-        // 克隆了current的vma
         let cloned_mm = current().mm.as_ref().clone();
 
         // clone the global shared pages (as system memory)
         // TODO: exclude the stack page from the cloned page table
-        // 这里复制了内核的信息
         #[cfg(feature = "paging")]
         for r in ruxhal::mem::memory_regions() {
             cloned_page_table
@@ -452,22 +438,17 @@ impl TaskInner {
 
         // mapping the page for stack to the process's stack, stack must keep at the same position.
         // TODO: merge these code with previous.
-        // 新分配了一个栈
         let new_stack = TaskStack::alloc(align_up_4k(stack_size));
-        // 获取了栈的地址
         let new_stack_vaddr = new_stack.end();
         let stack_paddr = direct_virt_to_phys(new_stack_vaddr);
 
         // Note: the stack region is mapped to the same position as the parent process's stack, be careful when update the stack region for the forked process.
-        // 这里是对新的页表进行栈的处理，下面这个操作是获取当前任务栈的flag
         let (_, prev_flag, _) = cloned_page_table
             .query(*current().stack_map_addr.lock())
             .expect("failed to query stack region when forking");
-        // 然后我们在新的页表里面把栈对应的映射给杀掉
         cloned_page_table
             .unmap_region(*current().stack_map_addr.lock(), align_up_4k(stack_size))
             .expect("failed to unmap stack region when forking");
-        // 最后我们把自己新生成的栈放进去
         cloned_page_table
             .map_region(
                 *current().stack_map_addr.lock(),
@@ -479,7 +460,6 @@ impl TaskInner {
             .expect("failed to map stack region when forking");
 
         // clone parent pages in memory, and mark all unshared pages to read-only
-        // 这里把所有的currenttask的vma映射到克隆的pagetable中
         for (vaddr, page_info) in cloned_mm.mem_map.lock().iter() {
             let paddr = page_info.paddr;
             cloned_page_table
@@ -558,7 +538,6 @@ impl TaskInner {
             fs: Arc::new(SpinNoIrq::new(current_task.fs.lock().clone())),
             #[cfg(feature = "paging")]
             mm: Arc::new(cloned_mm),
-            brk:Arc::new(SpinNoIrq::new(BrkHeap::new())),
         };
 
         debug!("new task forked: {}", t.id_name());
@@ -640,7 +619,6 @@ impl TaskInner {
             fs: Arc::new(SpinNoIrq::new(None)),
             #[cfg(feature = "paging")]
             mm: Arc::new(MmapStruct::new()),
-            brk: Arc::new(SpinNoIrq::new(BrkHeap::new()))
         };
         debug!("new init task: {}", t.id_name());
 
@@ -711,7 +689,6 @@ impl TaskInner {
             fs: task_ref.fs.clone(),
             #[cfg(feature = "paging")]
             mm: task_ref.mm.clone(),
-            brk: task_ref.brk.clone(),
         };
 
         #[cfg(feature = "tls")]
@@ -882,15 +859,12 @@ impl fmt::Debug for TaskInner {
 /// A wrapper of TaskStack to provide a safe interface for allocating and
 /// deallocating task stacks.
 pub struct TaskStack {
-    // 这个指针NonNull可以说就是裸指针的封装，意思就是它可以保证这个指针不为空指针，原理是在生成的时候不能使用空指针生成
     ptr: NonNull<u8>,
-    // layout描述了栈的大小以及对齐方式
     layout: Layout,
 }
 
 impl TaskStack {
     /// Allocate a new task stack with the given size.
-    /// 调用alloc函数会直接产生一个TaskStack，系统会分配一个8字节对齐，大小为size的栈空间，并且由NonNull hold住栈指针
     pub fn alloc(size: usize) -> Self {
         let layout = Layout::from_size_align(size, 8).unwrap();
         Self {
@@ -900,13 +874,11 @@ impl TaskStack {
     }
 
     /// Deallocate the task stack.
-    /// 该方法可以获得栈的顶部
     pub const fn top(&self) -> VirtAddr {
         unsafe { core::mem::transmute(self.ptr.as_ptr().add(self.layout.size())) }
     }
 
     /// Deallocate the task stack.
-    /// 该函数可以获得栈的底部
     pub const fn end(&self) -> VirtAddr {
         unsafe { core::mem::transmute(self.ptr.as_ptr()) }
     }
@@ -966,25 +938,11 @@ impl CurrentTask {
             "-----------set_current-------------,next ptr={:#}",
             next.id_name()
         );
-        // if next.id().0 == 4{
-            unsafe {
-                pan();
-            }
-        // }
         let Self(arc) = prev;
         ManuallyDrop::into_inner(arc); // `call Arc::drop()` to decrease prev task reference count.
         let ptr = Arc::into_raw(next);
         ruxhal::cpu::set_current_task_ptr(ptr);
     }
-}
-
-extern "C"{
-    fn pan();
-}
-
-#[no_mangle]
-extern "C" fn ppan(){
-    return;
 }
 
 impl Deref for CurrentTask {

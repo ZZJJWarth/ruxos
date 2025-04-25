@@ -128,8 +128,6 @@ pub enum SyscallId {
     #[cfg(feature = "net")]
     SENDMSG = 211,
     #[cfg(feature = "alloc")]
-    BRK = 214,
-    #[cfg(feature = "alloc")]
     MUNMAP = 215,
     #[cfg(feature = "alloc")]
     MREMAP = 216,

@@ -140,7 +140,6 @@ fn is_init_ok() -> bool {
     INITED_CPUS.load(Ordering::Acquire) == ruxconfig::SMP
 }
 
-
 /// The main entry point of the Ruxos runtime.
 ///
 /// It is called from the bootstrapping code in [ruxhal]. `cpu_id` is the ID of
@@ -283,7 +282,6 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
         core::hint::spin_loop();
     }
 
-    // debug!("enable:{}",irqs_enabled());
     // environ variables and Command line parameters initialization
     #[cfg(feature = "alloc")]
     unsafe {

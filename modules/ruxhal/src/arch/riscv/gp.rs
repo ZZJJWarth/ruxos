@@ -9,13 +9,12 @@ pub fn resume_kernel_gp(){
         if GP_POINTER == 0{
             return
         }else{
-                core::arch::asm!(
-                    "mv {0}, gp
-                    mv gp, {1}",
-                    out(reg) USER_GP_POINTER,
-                    in(reg) GP_POINTER
-                )
-            
+            core::arch::asm!(
+                "mv {0}, gp
+                mv gp, {1}",
+                out(reg) USER_GP_POINTER,
+                in(reg) GP_POINTER
+            )
         }
     }
 
@@ -26,14 +25,12 @@ pub fn resume_user_gp(){
         if USER_GP_POINTER == 0{
             return
         }else{
-        
-                core::arch::asm!(
-                    "mv {0}, gp
-                    mv gp, {1}",
-                    out(reg) GP_POINTER,
-                    in(reg) USER_GP_POINTER
-                )
-            
+            core::arch::asm!(
+                "mv {0}, gp
+                mv gp, {1}",
+                out(reg) GP_POINTER,
+                in(reg) USER_GP_POINTER
+            )
         }
     }
 }
