@@ -137,12 +137,12 @@ impl TaskContext {
     /// It's only supposed to use this function for processes stack's copying
     /// Not only the content of the src process's stack would be copied into dst's
     /// It would also save the current context of the process to src's stack
-    /// 
+    ///
     /// # Argument
     ///  - src: The raw pointer of the src process stack
     ///  - dst: The raw pointer of the dst process stack
     ///  - size: The size of the stack
-    /// 
+    ///
     /// # Safety
     /// This function assumes that the parameter "size" indicate exactly the size of both stacks.
     /// The caller must ensure this to make safe function call.

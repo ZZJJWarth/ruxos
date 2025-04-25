@@ -117,11 +117,7 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             #[allow(unreachable_code)]
             SyscallId::EXECVE => {
                 use core::ffi::c_char;
-                ruxos_posix_api::sys_execve(
-                    args[0] as *const c_char,
-                    args[1],
-                    args[2],
-                ) as _
+                ruxos_posix_api::sys_execve(args[0] as *const c_char, args[1], args[2]) as _
             }
             #[cfg(feature = "fd")]
             SyscallId::WRITEV => ruxos_posix_api::sys_writev(
