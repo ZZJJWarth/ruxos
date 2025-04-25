@@ -124,7 +124,7 @@ impl From<RuxStat> for ctypes::stat {
         }
     }
 
-    #[cfg(target_arch="riscv64")]
+    #[cfg(target_arch = "riscv64")]
     fn from(rstat: RuxStat) -> Self {
         ctypes::stat {
             st_dev: rstat.st_dev,

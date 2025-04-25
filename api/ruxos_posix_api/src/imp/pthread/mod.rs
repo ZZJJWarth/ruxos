@@ -392,8 +392,7 @@ pub unsafe fn sys_clone(
             };
             debug!("will sys_clone <= pid: {}", pid);
             return Ok(pid);
-        }
-         else {
+        } else {
             debug!("ONLY support CLONE_THREAD and SIGCHLD");
             return Err(LinuxError::EINVAL);
         }

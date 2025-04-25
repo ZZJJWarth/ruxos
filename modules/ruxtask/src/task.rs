@@ -10,15 +10,12 @@
 //! implementation of task structure and related functions.
 #[cfg(feature = "fs")]
 use crate::fs::FileSystem;
-use crate::vma::Vma;
 use alloc::collections::BTreeMap;
 use alloc::{
     boxed::Box,
     string::String,
     sync::{Arc, Weak},
 };
-use spin::Spin;
-use core::arch::asm;
 use core::mem::ManuallyDrop;
 use core::ops::Deref;
 use core::sync::atomic::{AtomicBool, AtomicI32, AtomicU64, AtomicU8, Ordering};
@@ -87,7 +84,6 @@ pub struct TaskInner {
     wait_for_exit: WaitQueue,
 
     stack_map_addr: SpinNoIrq<VirtAddr>,
-
     kstack: SpinNoIrq<Arc<Option<TaskStack>>>,
     ctx: UnsafeCell<TaskContext>,
 
@@ -116,7 +112,6 @@ pub struct TaskInner {
     #[cfg(feature = "paging")]
     /// memory management
     pub mm: Arc<MmapStruct>,
-
 }
 
 impl TaskId {
@@ -272,9 +267,6 @@ impl TaskInner {
         }
     }
 
-
-
-
     #[cfg(feature = "musl")]
     fn new_common_tls(
         id: TaskId,
@@ -395,7 +387,11 @@ impl TaskInner {
         Arc::new(AxTask::new(t))
     }
 
-    #[cfg(all(any(target_arch = "aarch64",target_arch = "riscv64"), feature = "paging", feature = "fs"))]
+    #[cfg(all(
+        any(target_arch = "aarch64", target_arch = "riscv64"),
+        feature = "paging",
+        feature = "fs"
+    ))]
     /// only support for aarch64
     pub fn fork() -> AxTaskRef {
         use crate::alloc::string::ToString;

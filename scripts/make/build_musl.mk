@@ -24,7 +24,7 @@ ifeq ($(MODE), release)
 else ifeq ($(MODE), reldebug)
   CFLAGS += -O3 -g
 else
-  CFLAGS += -O3 -g
+  CFLAGS += -Og -g
 endif
 
 ifeq ($(ARCH), x86_64)

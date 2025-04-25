@@ -7,15 +7,12 @@
  *   See the Mulan PSL v2 for more details.
  */
 
-use core::arch::asm;
-
 #[cfg(feature = "fs")]
 use crate::fs::get_file_like;
 use alloc::collections::VecDeque;
 use alloc::sync::Arc;
 use axerrno::LinuxResult;
 use lazy_init::LazyInit;
-use log::warn;
 use ruxfdtable::RUX_FILE_LIMIT;
 use scheduler::BaseScheduler;
 use spinlock::SpinNoIrq;
@@ -37,7 +34,6 @@ static IDLE_TASK: LazyInit<AxTaskRef> = LazyInit::new();
 pub(crate) struct AxRunQueue {
     scheduler: Scheduler,
 }
-
 
 impl AxRunQueue {
     pub fn new() -> SpinNoIrq<Self> {
@@ -65,7 +61,6 @@ impl AxRunQueue {
     }
 
     pub fn yield_current(&mut self) {
-        
         let curr = crate::current();
         trace!("task yield: {}", curr.id_name());
         assert!(curr.is_running());
@@ -172,7 +167,6 @@ impl AxRunQueue {
     /// slice, otherwise reset it.
     fn resched(&mut self, preempt: bool) {
         let prev = crate::current();
-        
         if prev.is_running() {
             prev.set_state(TaskState::Ready);
             if !prev.is_idle() {
@@ -180,7 +174,6 @@ impl AxRunQueue {
                     .put_prev_task(prev.clone_as_taskref(), preempt);
             }
         }
-        
         let next = self.scheduler.pick_next_task().unwrap_or_else(|| unsafe {
             // Safety: IRQs must be disabled at this time.
             IDLE_TASK.current_ref_raw().get_unchecked().clone()
@@ -188,10 +181,8 @@ impl AxRunQueue {
         self.switch_to(prev, next);
     }
 
-    #[cfg(any(target_arch = "aarch64",target_arch = "riscv64"))]
+    #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
     fn switch_to(&mut self, prev_task: CurrentTask, next_task: AxTaskRef) {
-
-        use core::arch::asm;
         trace!(
             "context switch: {} -> {}",
             prev_task.id_name(),
@@ -212,14 +203,15 @@ impl AxRunQueue {
             // but won't be dropped until `gc_entry()` is called.
             assert!(Arc::strong_count(prev_task.as_task_ref()) > 1);
             assert!(Arc::strong_count(&next_task) >= 1);
+
             let next_page_table = next_task.pagetable.lock();
             let root_paddr = next_page_table.root_paddr();
 
             // Drop the `next_page_table` here, so that it will not be dropped after context switch.
             drop(next_page_table);
+
             CurrentTask::set_current(prev_task, next_task);
 
-            // switch to函数需要页表地址，所以唯一的不同就是页表的问题
             (*prev_ctx_ptr).switch_to(&*next_ctx_ptr, root_paddr);
         }
     }
@@ -248,7 +240,7 @@ impl AxRunQueue {
             assert!(Arc::strong_count(&next_task) >= 1);
 
             CurrentTask::set_current(prev_task, next_task);
-            (*prev_ctx_ptr).switch_to(&*next_ctx_ptr,None);
+            (*prev_ctx_ptr).switch_to(&*next_ctx_ptr);
         }
     }
 }

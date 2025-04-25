@@ -143,11 +143,12 @@ pub fn sys_execve(pathname: *const c_char, argv: usize, envp: usize) -> ! {
         .fd_table
         .do_close_on_exec();
 
-    #[cfg(target_arch="riscv64")]{
+    #[cfg(target_arch = "riscv64")]
+    {
         use ruxhal::arch::save_kernel_gp;
         save_kernel_gp();
     }
-    
+
     set_sp_and_jmp(sp, entry);
 }
 

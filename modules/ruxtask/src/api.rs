@@ -8,7 +8,6 @@
  */
 
 //! Task APIs for multi-task configuration.
-use core::arch::asm;
 
 use alloc::{string::String, sync::Arc};
 
@@ -131,7 +130,11 @@ where
 }
 
 // temporarily only support aarch64
-#[cfg(all(any(target_arch = "aarch64",target_arch = "riscv64"), feature = "paging", feature = "fs"))]
+#[cfg(all(
+    any(target_arch = "aarch64", target_arch = "riscv64"),
+    feature = "paging",
+    feature = "fs"
+))]
 pub fn fork_task() -> Option<AxTaskRef> {
     use core::mem::ManuallyDrop;
 

@@ -91,7 +91,7 @@ pub unsafe fn sys_wait4(
         "sys_wait4 <= pid: {}, wstatus: {:?}, options: {}, rusage: {:?}",
         pid, wstatus, options, rusage
     );
-    
+
     if pid > 0 {
         loop {
             let mut process_map = PROCESS_MAP.lock();

@@ -8,14 +8,10 @@
  */
 
 use core::arch::asm;
-use memory_addr::VirtAddr;
 use memory_addr::PhysAddr;
-use riscv::asm;
-
-use crate::arch::read_page_table_root;
+use memory_addr::VirtAddr;
 
 use super::reg_satp::RegSatp;
-// use super::satp::RegSatp;
 
 include_asm_marcos!();
 
@@ -123,37 +119,57 @@ impl TaskContext {
     ///
     /// It first saves the current task's context from CPU to this place, and then
     /// restores the next task's context from `next_ctx` to CPU.
-    pub fn switch_to(&mut self, next_ctx: &Self, page_table_addr:PhysAddr) {
+    pub fn switch_to(&mut self, next_ctx: &Self, page_table_addr: PhysAddr) {
         #[cfg(feature = "tls")]
         {
             self.tp = super::read_thread_pointer();
             unsafe { super::write_thread_pointer(next_ctx.tp) };
         }
 
-        let satp = RegSatp::new(riscv::register::satp::Mode::Sv39, 0, page_table_addr.into());
+        let satp = RegSatp::gen_satp(riscv::register::satp::Mode::Sv39, 0, page_table_addr.into());
         unsafe {
             // TODO: switch FP states
-            context_switch(self, next_ctx,satp);
+            context_switch(self, next_ctx, satp);
         }
     }
 
-    pub fn save_current_content(&mut self, src: *const u8, dst: *mut u8, size: usize){
-        unsafe{save_stack(src,dst,size);}
-
-        for i in 0..size{
-            unsafe {if *src.add(i) != *dst.add(i){
-                panic!()
-            }}
+    /// This function copy the content from src to dst,the content size is given by parameter "size"
+    /// It's only supposed to use this function for processes stack's copying
+    /// Not only the content of the src process's stack would be copied into dst's
+    /// It would also save the current context of the process to src's stack
+    /// 
+    /// # Argument
+    ///  - src: The raw pointer of the src process stack
+    ///  - dst: The raw pointer of the dst process stack
+    ///  - size: The size of the stack
+    /// 
+    /// # Safety
+    /// This function assumes that the parameter "size" indicate exactly the size of both stacks.
+    /// The caller must ensure this to make safe function call.
+    pub unsafe fn save_current_content(&mut self, src: *const u8, dst: *mut u8, size: usize) {
+        unsafe {
+            save_stack(src, dst, size);
         }
-        unsafe {save_current_context(self);}
+
+        // for i in 0..size {
+        //     unsafe {
+        //         if *src.add(i) != *dst.add(i) {
+        //             panic!()
+        //         }
+        //     }
+        // }
+
+        unsafe {
+            save_current_context(self);
+        }
     }
 }
 
 #[naked]
 #[allow(named_asm_labels)]
-unsafe fn save_current_context(_current_task:&mut TaskContext){
-
-    asm!("
+unsafe extern "C" fn save_current_context(_current_task: &mut TaskContext) {
+    asm!(
+        "
         sd  ra,0(a0)
         sd  sp,8(a0)
         sd  s0,16(a0)
@@ -171,16 +187,18 @@ unsafe fn save_current_context(_current_task:&mut TaskContext){
         sd  tp,112(a0)
         ret
     ",
-    options(noreturn))    
+        options(noreturn)
+    )
 }
 
 #[naked]
 #[no_mangle]
 #[allow(named_asm_labels)]
 // TODO: consider using SIMD instructions to copy the stack in parallel.
-unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
+unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize) {
     // a0:src ; a1:dst ; a2:size
-    asm!("
+    asm!(
+        "
         xor     a4,a4,a4
         add    a4,a4,a2
         start_copy:
@@ -194,12 +212,16 @@ unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize){
 
         ",
         options(noreturn)
-)
+    )
 }
 
 #[naked]
 #[allow(named_asm_labels)]
-unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext,_page_table_addr:usize) {
+unsafe extern "C" fn context_switch(
+    _current_task: &mut TaskContext,
+    _next_task: &TaskContext,
+    _page_table_addr: usize,
+) {
     asm!(
         "
         // save old context (callee-saved registers)

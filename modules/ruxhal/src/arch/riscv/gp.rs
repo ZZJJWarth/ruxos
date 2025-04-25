@@ -1,14 +1,11 @@
 #[link_section = ".bss"]
-static mut GP_POINTER:usize=0;
+static mut GP_POINTER: usize = 0;
 #[link_section = ".bss"]
-static mut USER_GP_POINTER:usize=0;
+static mut USER_GP_POINTER: usize = 0;
 
-
-pub fn resume_kernel_gp(){
-    unsafe{
-        if GP_POINTER == 0{
-            return
-        }else{
+pub fn resume_kernel_gp() {
+    unsafe {
+        if GP_POINTER != 0 {
             core::arch::asm!(
                 "mv {0}, gp
                 mv gp, {1}",
@@ -17,14 +14,11 @@ pub fn resume_kernel_gp(){
             )
         }
     }
-
 }
 
-pub fn resume_user_gp(){
-    unsafe{
-        if USER_GP_POINTER == 0{
-            return
-        }else{
+pub fn resume_user_gp() {
+    unsafe {
+        if USER_GP_POINTER != 0 {
             core::arch::asm!(
                 "mv {0}, gp
                 mv gp, {1}",
@@ -35,13 +29,11 @@ pub fn resume_user_gp(){
     }
 }
 
-pub fn store_kernel_gp(){
-    unsafe{
-        core::arch::asm!{
+pub fn store_kernel_gp() {
+    unsafe {
+        core::arch::asm! {
             "mv {0},gp",
             out(reg) GP_POINTER
         }
     }
 }
-
-

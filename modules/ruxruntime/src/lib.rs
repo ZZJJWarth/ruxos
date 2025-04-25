@@ -49,7 +49,6 @@ mod mp;
 #[cfg(feature = "smp")]
 pub use self::mp::rust_main_secondary;
 
-use ruxhal::arch::irqs_enabled;
 #[cfg(feature = "signal")]
 use ruxtask::signal::Signal;
 

@@ -290,7 +290,7 @@ impl From<VfsNodeAttr> for RuxStat {
     }
 }
 
-#[cfg(any(target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 impl From<VfsNodeAttr> for RuxStat {
     fn from(attr: VfsNodeAttr) -> Self {
         Self {
