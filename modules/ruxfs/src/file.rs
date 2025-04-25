@@ -119,13 +119,15 @@ impl File {
 
 impl Drop for File {
     fn drop(&mut self) {
-        unsafe { self.node.access_unchecked().release().ok() };
+        unsafe {
+            self.node.access_unchecked().release().ok();
+        }
     }
 }
 
 impl FileLike for File {
     fn path(&self) -> AbsPath {
-        self.path.to_owned()
+        self.path.clone()
     }
 
     /// Reads the file at the current position. Returns the number of bytes
@@ -158,16 +160,26 @@ impl FileLike for File {
     }
 
     fn poll(&self) -> LinuxResult<PollState> {
-        Ok(PollState {
-            readable: true,
-            writable: true,
-            pollhup: false,
-        })
+        self.node
+            .access(Cap::READ)?
+            .poll()
+            .map_err(LinuxError::from)
     }
 
     fn set_flags(&self, flags: OpenFlags) -> LinuxResult {
         *self.flags.write() = flags;
         Ok(())
+    }
+
+    fn ioctl(&self, cmd: usize, arg: usize) -> LinuxResult<usize> {
+        self.node
+            .access(Cap::READ)?
+            .ioctl(cmd, arg)
+            .map_err(LinuxError::from)
+    }
+
+    fn flags(&self) -> OpenFlags {
+        *self.flags.read()
     }
 }
 

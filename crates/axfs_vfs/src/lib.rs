@@ -53,8 +53,11 @@ mod macros;
 mod path;
 mod structs;
 
+use core::any::Any;
+
 use alloc::sync::Arc;
 use axerrno::{ax_err, AxError, AxResult};
+use axio::PollState;
 
 pub use self::path::{AbsPath, RelPath};
 pub use self::structs::{FileSystemInfo, VfsDirEntry, VfsNodeAttr, VfsNodePerm, VfsNodeType};
@@ -94,7 +97,7 @@ pub trait VfsOps: Send + Sync {
     fn root_dir(&self) -> VfsNodeRef;
 }
 
-/// Node (file/directory) operations.
+/// Node (file/directory/lib) operations.
 pub trait VfsNodeOps: Send + Sync {
     /// Do something when the node is opened.
     /// For example, open some special nodes like `/dev/ptmx` should return a new node named `PtyMaster`
@@ -225,6 +228,11 @@ pub trait VfsNodeOps: Send + Sync {
         unimplemented!()
     }
 
+    /// Provides type-erased access to the underlying `Arc` for downcasting.
+    fn as_any_arc(self: Arc<Self>) -> Arc<dyn Any + Send + Sync> {
+        unimplemented!()
+    }
+
     /// Create a new node with given `path` in the directory, recursively.
     ///
     /// Default implementation `create`s all prefix sub-paths sequentially,
@@ -246,6 +254,29 @@ pub trait VfsNodeOps: Send + Sync {
         self.create(path, ty)?;
 
         Ok(())
+    }
+
+    /// Manipulates the underlying device parameters of special files.
+    /// In particular, many operating characteristics of character special files
+    /// (e.g., terminals) may be controlled with ioctl() requests.
+    fn ioctl(&self, _cmd: usize, _arg: usize) -> VfsResult<usize> {
+        Err(AxError::Unsupported)
+    }
+
+    /// For regular files, the poll() always returns immediately with POLLIN | POLLOUT
+    /// events set, since I/O operations on regular files are always considered ready.
+    ///
+    /// For special files like character devices, poll() requires actual readiness
+    /// checks:
+    /// - POLLIN is set when the device's input buffer has data available
+    /// - POLLOUT is set when the device's output buffer has space available
+    /// - POLLHUP is set when peer closed
+    fn poll(&self) -> AxResult<PollState> {
+        Ok(PollState {
+            readable: true,
+            writable: true,
+            pollhup: false,
+        })
     }
 }
 

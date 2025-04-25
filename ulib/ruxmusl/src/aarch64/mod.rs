@@ -47,6 +47,13 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
             #[cfg(feature = "fd")]
             SyscallId::IOCTL => ruxos_posix_api::sys_ioctl(args[0] as c_int, args[1], args[2]) as _,
             #[cfg(feature = "fs")]
+            SyscallId::MKNODAT => ruxos_posix_api::sys_mknodat(
+                args[0] as c_int,
+                args[1] as *const core::ffi::c_char,
+                args[2] as ctypes::mode_t,
+                args[3] as ctypes::dev_t,
+            ) as _,
+            #[cfg(feature = "fs")]
             SyscallId::MKDIRAT => ruxos_posix_api::sys_mkdirat(
                 args[0] as c_int,
                 args[1] as *const core::ffi::c_char,
@@ -73,6 +80,10 @@ pub fn syscall(syscall_id: SyscallId, args: [usize; 6]) -> isize {
                 args[2] as c_int,
                 args[3] as *const core::ffi::c_char,
             ) as _,
+            #[cfg(feature = "fs")]
+            SyscallId::FTRUNCATE => {
+                ruxos_posix_api::sys_ftruncate(args[0] as c_int, args[1] as ctypes::off_t) as _
+            }
             #[cfg(feature = "fs")]
             SyscallId::FACCESSAT => ruxos_posix_api::sys_faccessat(
                 args[0] as c_int,
