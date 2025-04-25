@@ -155,7 +155,6 @@ fn set_sp_and_jmp(sp: usize, entry: usize) -> ! {
     #[cfg(target_arch = "aarch64")]
     unsafe {
         core::arch::asm!("
-        
          mov sp, {}
          br {}
      ",

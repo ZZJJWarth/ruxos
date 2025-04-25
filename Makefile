@@ -230,9 +230,9 @@ debug: build
 	sleep 1
 	$(GDB) $(OUT_ELF) \
 	  -ex 'target remote localhost:1234' \
-	  -ex 'b trap_vector_base' \
-    -ex 'continue' 
-    # -ex 'disp /16i $$pc'
+	  -ex 'b rust_entry' \
+	  -ex 'continue' \
+	  -ex 'disp /16i $$pc'
 
 debug_no_attach: build
 	$(call run_qemu_debug)
