@@ -1,0 +1,160 @@
+Test instruction:make run ARCH=riscv64 APP=apps/c/mmap/ MUSL=y V9P=y LOG=debug SMP=1 > mmap_test_logdebug.txt
+
+8888888b.                     .d88888b.   .d8888b.
+888   Y88b                   d88P" "Y88b d88P  Y88b
+888    888                   888     888 Y88b.
+888   d88P 888  888 888  888 888     888  "Y888b.
+8888888P"  888  888 `Y8bd8P' 888     888     "Y88b.
+888 T88b   888  888   X88K   888     888       "888
+888  T88b  Y88b 888 .d8""8b. Y88b. .d88P Y88b  d88P
+888   T88b  "Y88888 888  888  "Y88888P"   "Y8888P"
+
+arch = riscv64
+platform = riscv64-qemu-virt
+target = riscv64gc-unknown-none-elf
+smp = 1
+build_mode = release
+log_level = debug
+
+[37m[  0.040032 0 ruxruntime:173] [32mLogging is enabled.[m
+[m[37m[  0.041129 0 ruxruntime:381] [32mInitialize global memory allocator...[m
+[m[37m[  0.041622 0 ruxruntime:382] [32m  use slab allocator.[m
+[m[37m[  0.042339 0 axalloc:221] [36minitialize global allocator at: [0xffffffc080310000, 0xffffffc100000000)[m
+[m[37m[  0.044335 0 ruxruntime:181] [32mPrimary CPU 0 started, dtb = 0xbfe00000.[m
+[m[37m[  0.044823 0 ruxruntime:183] [32mFound physcial memory regions:[m
+[m[37m[  0.045333 0 ruxruntime:185] [32m  [PA:0x80200000, PA:0x80258000) .text (READ | EXECUTE | RESERVED)[m
+[m[37m[  0.046132 0 ruxruntime:185] [32m  [PA:0x80258000, PA:0x8026a000) .rodata (READ | RESERVED)[m
+[m[37m[  0.046710 0 ruxruntime:185] [32m  [PA:0x8026a000, PA:0x8026d000) .data .tdata .tbss .percpu (READ | WRITE | RESERVED)[m
+[m[37m[  0.047438 0 ruxruntime:185] [32m  [PA:0x8026d000, PA:0x802ed000) boot stack (READ | WRITE | RESERVED)[m
+[m[37m[  0.048061 0 ruxruntime:185] [32m  [PA:0x802ed000, PA:0x80310000) .bss (READ | WRITE | RESERVED)[m
+[m[37m[  0.048665 0 ruxruntime:185] [32m  [PA:0x80310000, PA:0x100000000) free memory (READ | WRITE | EXECUTE | FREE)[m
+[m[37m[  0.049358 0 ruxruntime:185] [32m  [PA:0xc000000, PA:0xc210000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.049981 0 ruxruntime:185] [32m  [PA:0x10000000, PA:0x10001000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.050596 0 ruxruntime:185] [32m  [PA:0x10001000, PA:0x10009000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.051138 0 ruxruntime:185] [32m  [PA:0x30000000, PA:0x40000000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.051679 0 ruxruntime:185] [32m  [PA:0x40000000, PA:0x80000000) mmio (READ | WRITE | DEVICE | RESERVED)[m
+[m[37m[  0.052800 0 axalloc:127] [36mexpand heap memory: [0xffffffc080318000, 0xffffffc080328000)[m
+[m[37m[  0.053383 0 axalloc:127] [36mexpand heap memory: [0xffffffc080328000, 0xffffffc080348000)[m
+[m[37m[  0.053860 0 axalloc:127] [36mexpand heap memory: [0xffffffc080348000, 0xffffffc080388000)[m
+[m[37m[  0.054307 0 axalloc:127] [36mexpand heap memory: [0xffffffc080388000, 0xffffffc080408000)[m
+[m[37m[  0.056231 0 ruxruntime:196] [32mInitialize platform devices...[m
+[m[37m[  0.056902 0 ruxtask::api:78] [32mInitialize scheduling...[m
+[m[37m[  0.058220 0 ruxtask::task:619] [36mnew init task: Task(1, "main")[m
+[m[37m[  0.058821 0 ruxtask::task:323] [36mset_stack_top: begin=0xffffffc08026d000, size=0x80000[m
+[m[37m[  0.060031 0 ruxtask::task:225] [36mnew_common: process_id=Task(1, "main"), name=2[m
+[m[37m[  0.060949 0 ruxtask::task:373] [36mnew task: Task(2, "idle")[m
+[m[37m[  0.061653 0 ruxtask::task:225] [36mnew_common: process_id=Task(1, "main"), name=3[m
+[m[37m[  0.062296 0 ruxtask::task:373] [36mnew task: Task(3, "gc")[m
+[m[37m[  0.062892 0 axalloc:127] [36mexpand heap memory: [0xffffffc080409000, 0xffffffc080609000)[m
+[m[37m[  0.064323 0 ruxtask::api:86] [32m  use Round-robin scheduler.[m
+[m[37m[  0.064936 0 ruxruntime:212] [32mInitialize kernel page table...[m
+[m[37m[  0.066244 0 ruxdriver:168] [32mInitialize device drivers...[m
+[m[37m[  0.066746 0 ruxdriver:169] [32m  device model: static[m
+[m[37m[  0.067161 0 ruxdriver:184] [36mnumber of block devices: 0[m
+[m[37m[  0.070628 0 axfs_ramfs::dir:65] [31mAlreadyExists sys[m
+[m[37m[  0.071347 0 ruxfs::mounts:81] [36msysfs: Ok(VfsNodeAttr { ino: 0, mode: VfsNodePerm(OWNER_READ | OWNER_WRITE | OWNER_EXEC | GROUP_READ | GROUP_EXEC | OTHER_READ | OTHER_EXEC), ty: Dir, size: 4096, blocks: 0 })[m
+[m[37m[  0.074187 0 ruxtask::fs:118] [32mmounting /dev[m
+[m[37m[  0.075280 0 ruxtask::fs:118] [32mmounting /tmp[m
+[m[37m[  0.075895 0 ruxtask::fs:118] [32mmounting /proc[m
+[m[37m[  0.076262 0 ruxtask::fs:118] [32mmounting /sys[m
+[m[37m[  0.076613 0 ruxtask::fs:118] [32mmounting /etc[m
+[m[37m[  0.077113 0 ruxos_posix_api::imp::fs:36] [36minit initial process's fd_table[m
+[m[37m[  0.078042 0 ruxruntime:267] [32mInitialize interrupt handlers...[m
+[m[37m[  0.078915 0 ruxruntime:277] [32mPrimary CPU 0 init OK.[m
+[m[37m[  0.080092 0:1 ruxruntime:292] [32mmemory base: 0x0, memory size: 0x0[m
+[m[37m[  0.081082 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: SET_TID_ADDRESS[m
+[m[37m[  0.081648 0:1 ruxos_posix_api::imp::pthread:460] [36mset_tid_address <= addr: 0xffffffc08030fa20[m
+[m[37m[  0.082243 0:1 ruxos_posix_api::imp::pthread:459] [36msys_set_tid_address => Ok(1)[m
+[m[37m[  0.082995 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: MMAP[m
+[m[37m[  0.083509 0:1 ruxos_posix_api::imp::mmap::api:46] [36msys_mmap <= start: 0x0, len: 0x1000, prot:0x3, flags:0x22, fd: -1[m
+[m[37m[  0.084769 0:1 ruxos_posix_api::imp::mmap::api:50] [36msys_mmap => Ok(0xffffffc800000000)[m
+[m[37m[  0.085468 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: MMAP[m
+[m[37m[  0.085858 0:1 ruxos_posix_api::imp::mmap::api:46] [36msys_mmap <= start: 0x0, len: 0x1000, prot:0x3, flags:0x22, fd: -1[m
+[m[37m[  0.086567 0:1 ruxos_posix_api::imp::mmap::api:50] [36msys_mmap => Ok(0xffffffc800001000)[m
+[m[37m[  0.087752 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: IOCTL[m
+[m[37m[  0.088302 0:1 ruxos_posix_api::imp::ioctl:19] [36msys_ioctl <= fd: 1, request: 21523[m
+[m[37m[  0.090019 0:1 ruxos_posix_api::imp::ioctl:20] [36msys_ioctl => Ok(0)[m
+[m[37m[  0.090565 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.091065 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.091622 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc0802ed008 44[m
+[mMemory mapped at address: 0xffffffc800000000[37m[  0.092615 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(44)[m
+[m[37m[  0.093163 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08025802c 1[m
+[m
+[37m[  0.093690 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(1)[m
+[m[37m[  0.094175 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(45)[m
+[m[37m[  0.096019 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.096516 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.097043 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc0802ed008 31[m
+[mWritten to memory: Hello, mmap![37m[  0.097788 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(31)[m
+[m[37m[  0.098255 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc0802580d5 1[m
+[m
+[37m[  0.098917 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(1)[m
+[m[37m[  0.099414 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(32)[m
+[m[37m[  0.099966 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.100477 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.101024 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc0802ed008 30[m
+[mRead from memory: Hello, mmap![37m[  0.101752 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(30)[m
+[m[37m[  0.102128 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc08025809c 1[m
+[m
+[37m[  0.102599 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(1)[m
+[m[37m[  0.102961 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(31)[m
+[m[37m[  0.103470 0:1 ruxmusl::trap:25] [32mInvalid syscall id: 227[m
+[m[37m[  0.103883 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: INVALID[m
+[m[37m[  0.104396 0:1 ruxos_posix_api::imp:47] [36msys_invalid <= id: 999[m
+[m[37m[  0.104893 0:1 ruxos_posix_api::imp:48] [32msys_invalid => Err(ENOSYS)[m
+[m[37m[  0.105703 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.106164 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 2, iocnt: 2[m
+[m[37m[  0.106666 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ed4a8 0[m
+[m[37m[  0.107184 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(0)[m
+[m[37m[  0.107620 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802580a0 12[m
+[mmsync failed[37m[  0.108242 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(12)[m
+[m[37m[  0.108765 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(12)[m
+[m[37m[  0.109359 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.109840 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 2, iocnt: 2[m
+[m[37m[  0.110305 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ed4a8 0[m
+[m[37m[  0.110854 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(0)[m
+[m[37m[  0.111296 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ec9ef 1[m
+[m:[37m[  0.111863 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(1)[m
+[m[37m[  0.112364 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(1)[m
+[m[37m[  0.112906 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.113417 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 2, iocnt: 2[m
+[m[37m[  0.113958 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ed4a8 0[m
+[m[37m[  0.114570 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(0)[m
+[m[37m[  0.115081 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ec9ef 1[m
+[m [37m[  0.115700 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(1)[m
+[m[37m[  0.116198 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(1)[m
+[m[37m[  0.116758 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.117212 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 2, iocnt: 2[m
+[m[37m[  0.117711 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ed4a8 0[m
+[m[37m[  0.118245 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(0)[m
+[m[37m[  0.118946 0:1 ruxtask::run_queue:87] [36mcurrent task is to be preempted: Task(1, "main"), allow=true[m
+[m[37m[  0.119868 0:1 ruxtask::task:933] [36m-----------set_current-------------,next ptr=Task(3, "gc")[m
+[m[37m[  0.120922 0:3 ruxtask::run_queue:123] [36mtask block: Task(3, "gc")[m
+[m[37m[  0.121513 0:3 ruxtask::task:933] [36m-----------set_current-------------,next ptr=Task(1, "main")[m
+[m[37m[  0.122177 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc080258e62 24[m
+[mFunction not implemented[37m[  0.122848 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(24)[m
+[m[37m[  0.123282 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(24)[m
+[m[37m[  0.123764 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.124220 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 2, iocnt: 2[m
+[m[37m[  0.124723 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ed4a8 0[m
+[m[37m[  0.125270 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(0)[m
+[m[37m[  0.125730 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 2 0xffffffc0802ec9ef 1[m
+[m
+[37m[  0.126230 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(1)[m
+[m[37m[  0.126648 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(1)[m
+[m[37m[  0.127100 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: MUNMAP[m
+[m[37m[  0.127645 0:1 ruxos_posix_api::imp::mmap::api:108] [36msys_munmap <= start: 0xffffffc800000000, len: 0x1000[m
+[m[37m[  0.130378 0:1 ruxos_posix_api::imp::mmap::api:109] [36msys_munmap => Ok(0)[m
+[m[37m[  0.131180 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: WRITEV[m
+[m[37m[  0.131699 0:1 ruxos_posix_api::imp::io:71] [36msys_writev <= fd: 1, iocnt: 2[m
+[m[37m[  0.132249 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc0802ed008 0[m
+[m[37m[  0.132855 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(0)[m
+[m[37m[  0.133331 0:1 ruxos_posix_api::imp::io:49] [36msys_write <= 1 0xffffffc0802580d8 30[m
+[mMemory unmapped successfully.
+[37m[  0.134067 0:1 ruxos_posix_api::imp::io:50] [36msys_write => Ok(30)[m
+[m[37m[  0.134508 0:1 ruxos_posix_api::imp::io:72] [36msys_writev => Ok(30)[m
+[m[37m[  0.135076 0:1 ruxmusl::riscv64:8] [36msyscall <= syscall_name: EXIT_GROUP[m
+[m[37m[  0.135568 0:1 ruxos_posix_api::imp::pthread:231] [36msys_exit_group <= status: 0[m
+[m[37m[  0.136489 0:1 ruxtask::run_queue:101] [36mtask exit: Task(1, "main"), exit_code=0[m
+[m[37m[  0.137138 0:1 ruxhal::platform::riscv64_qemu_virt::misc:12] [32mShutting down...[m
+[m
