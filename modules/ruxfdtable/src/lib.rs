@@ -184,7 +184,7 @@ pub struct RuxTimeSpec {
 }
 
 ///Rust version for struct stat in ctypes. Represents file status information.
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 #[derive(Default)]
 pub struct RuxStat {
     /// Device identifier.
@@ -222,7 +222,7 @@ pub struct RuxStat {
 }
 
 ///Rust version for struct stat in ctypes. Represents file status information.
-#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+#[cfg(target_arch = "x86_64")]
 #[derive(Default)]
 pub struct RuxStat {
     /// Device identifier.
@@ -257,7 +257,7 @@ pub struct RuxStat {
     pub __unused: [core::ffi::c_long; 3usize],
 }
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 impl From<VfsNodeAttr> for RuxStat {
     fn from(attr: VfsNodeAttr) -> Self {
         Self {
@@ -290,7 +290,7 @@ impl From<VfsNodeAttr> for RuxStat {
     }
 }
 
-#[cfg(any(target_arch = "x86_64", target_arch = "riscv64"))]
+#[cfg(target_arch = "x86_64")]
 impl From<VfsNodeAttr> for RuxStat {
     fn from(attr: VfsNodeAttr) -> Self {
         Self {

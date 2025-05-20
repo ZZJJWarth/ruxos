@@ -9,7 +9,9 @@
 
 use riscv::register::scause::{self, Exception as E, Trap};
 
-use super::TrapFrame;
+use super::{disable_irqs, enable_irqs, TrapFrame};
+
+use crate::arch::riscv::gp;
 
 include_asm_marcos!();
 
@@ -25,12 +27,15 @@ fn handle_breakpoint(sepc: &mut usize) {
 
 #[no_mangle]
 fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
+    gp::resume_kernel_gp();
     let scause = scause::read();
     match scause.cause() {
         Trap::Exception(E::Breakpoint) => handle_breakpoint(&mut tf.sepc),
         Trap::Interrupt(_) => crate::trap::handle_irq_extern(scause.bits()),
         #[cfg(feature = "musl")]
         Trap::Exception(E::UserEnvCall) => {
+            #[cfg(feature = "irq")]
+            enable_irqs();
             let ret = crate::trap::handle_syscall(
                 tf.regs.a7,
                 [
@@ -43,6 +48,23 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
                 ],
             );
             tf.regs.a0 = ret as _;
+            #[cfg(feature = "irq")]
+            disable_irqs();
+        }
+        #[cfg(feature = "paging")]
+        Trap::Exception(E::LoadPageFault) => {
+            let vaddr = riscv::register::stval::read();
+            crate::trap::handle_page_fault(vaddr, crate::trap::PageFaultCause::READ);
+        }
+        #[cfg(feature = "paging")]
+        Trap::Exception(E::StorePageFault) => {
+            let vaddr = riscv::register::stval::read();
+            crate::trap::handle_page_fault(vaddr, crate::trap::PageFaultCause::WRITE);
+        }
+        #[cfg(feature = "paging")]
+        Trap::Exception(E::InstructionPageFault) => {
+            let vaddr = riscv::register::stval::read();
+            crate::trap::handle_page_fault(vaddr, crate::trap::PageFaultCause::INSTRUCTION);
         }
         _ => {
             panic!(
@@ -53,4 +75,5 @@ fn riscv_trap_handler(tf: &mut TrapFrame, _from_user: bool) {
             );
         }
     }
+    gp::resume_user_gp();
 }

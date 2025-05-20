@@ -23,6 +23,8 @@ typedef unsigned mode_t;
 
 #if defined(__aarch64__)
 typedef uint32_t nlink_t;
+#elif defined(__riscv)
+typedef uint32_t nlink_t;
 #else
 typedef uint64_t nlink_t;
 #endif
