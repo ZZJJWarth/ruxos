@@ -7,7 +7,7 @@
  *   See the Mulan PSL v2 for more details.
  */
 
-use core::{arch::asm, fmt};
+use core::{arch::naked_asm, fmt};
 use memory_addr::VirtAddr;
 
 /// Saved registers when a trap (interrupt or exception) occurs.
@@ -207,7 +207,7 @@ impl TaskContext {
 
 #[unsafe(naked)]
 unsafe extern "C" fn context_switch(_current_stack: &mut u64, _next_stack: &u64) {
-    asm!(
+    naked_asm!(
         "
         push    rbp
         push    rbx

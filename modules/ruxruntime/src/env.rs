@@ -39,7 +39,7 @@ pub(crate) unsafe fn init_argv(args: Vec<&str>) {
         let arg = arg.as_ptr();
         let buf = buf_alloc(len + 1);
         for i in 0..len {
-            *buf.add(i) = *arg.add(i) as u8;
+            *buf.add(i) = *arg.add(i) as i8;
         }
         *buf.add(len) = 0;
         RUX_ARGV.push(buf);
@@ -99,7 +99,7 @@ pub(crate) fn boot_add_environ(env: &str) {
     unsafe {
         let buf = buf_alloc(size);
         for i in 0..size - 1 {
-            core::ptr::write(buf.add(i), *ptr.add(i) as u8);
+            core::ptr::write(buf.add(i), *ptr.add(i) as i8);
         }
         core::ptr::write(buf.add(size - 1), 0);
         RUX_ENVIRON.push(buf);
