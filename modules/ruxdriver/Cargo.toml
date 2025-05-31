@@ -20,6 +20,7 @@ net = ["driver_net"]
 block = ["driver_block"]
 display = ["driver_display"]
 _9p = ["driver_9p"]
+pci = []
 
 # Enabled by features `virtio-*`
 virtio = ["driver_virtio", "dep:axalloc", "dep:ruxhal", "dep:ruxconfig", "ruxhal/virtio"]
