@@ -9,7 +9,6 @@
 
 // TODO: rewrite this file and remove this allowance
 #[allow(static_mut_refs)]
-
 extern crate alloc;
 use alloc::vec::Vec;
 use core::ffi::c_char;

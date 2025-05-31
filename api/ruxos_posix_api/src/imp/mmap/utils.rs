@@ -101,7 +101,8 @@ pub(crate) fn find_free_region(
 ) -> Option<usize> {
     // Search free region in select region if start!=NULL, return error if `MAP_FIXED` flags exist.
     if let Some(start) = addr {
-        let end_addr = if let Some((_, lower_vma)) = vma_map.upper_bound(Bound::Included(&start)).peek_prev()
+        let end_addr = if let Some((_, lower_vma)) =
+            vma_map.upper_bound(Bound::Included(&start)).peek_prev()
         {
             lower_vma.end_addr
         } else {

@@ -168,7 +168,6 @@ unsafe extern "C" fn save_stack(src: *const u8, dst: *mut u8, size: usize) {
         dsb  sy
         isb
         ret",
-        
     )
 }
 
@@ -189,7 +188,6 @@ unsafe extern "C" fn save_current_context(_current_task: &mut TaskContext) {
         ldp     x19, x20, [x0, 2 * 8]
         isb
         ret",
-        
     )
 }
 
@@ -221,7 +219,6 @@ unsafe extern "C" fn save_fpstate_context(_current_fpstate: &mut FpState) {
         str     x10, [x0, 65 * 8]
         isb
         ret",
-        
     )
 }
 
@@ -271,7 +268,6 @@ unsafe extern "C" fn context_switch(
 
         isb
         ret",
-        
     )
 }
 
@@ -326,6 +322,5 @@ unsafe extern "C" fn fpstate_switch(_current_fpstate: &mut FpState, _next_fpstat
 
         isb
         ret",
-        
     )
 }

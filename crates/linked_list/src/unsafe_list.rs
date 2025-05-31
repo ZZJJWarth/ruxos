@@ -18,8 +18,8 @@
 //!   example, `dyn Trait`.
 //! - It would require the list head to be pinned (in addition to the list entries).
 
-use core::{cell::UnsafeCell, iter, marker::PhantomPinned, mem::MaybeUninit, ptr::NonNull};
 use core::ptr;
+use core::{cell::UnsafeCell, iter, marker::PhantomPinned, mem::MaybeUninit, ptr::NonNull};
 
 /// An intrusive circular doubly-linked list.
 ///

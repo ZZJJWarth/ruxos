@@ -146,7 +146,7 @@ unsafe extern "C" fn _start() -> ! {
         boot_stack_size = const TASK_STACK_SIZE,
         phys_virt_offset = const ruxconfig::PHYS_VIRT_OFFSET,
         entry = sym crate::platform::rust_entry,
-        
+
     )
 }
 
@@ -177,6 +177,6 @@ unsafe extern "C" fn _start_secondary() -> ! {
         enable_fp = sym enable_fp,
         phys_virt_offset = const ruxconfig::PHYS_VIRT_OFFSET,
         entry = sym crate::platform::rust_entry_secondary,
-        
+
     )
 }
