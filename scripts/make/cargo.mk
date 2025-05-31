@@ -33,8 +33,8 @@ define cargo_build
 endef
 
 define cargo_clippy
-  $(call run_cmd,cargo clippy,--all-features --workspace --exclude axlog $(1) $(verbose))
-  $(call run_cmd,cargo clippy,-p axlog $(1) $(verbose))
+  $(call run_cmd,cargo clippy,--fix --all-features --workspace --exclude axlog $(1) $(verbose))
+  $(call run_cmd,cargo clippy,--fix -p axlog $(1) $(verbose))
 endef
 
 all_packages := \
