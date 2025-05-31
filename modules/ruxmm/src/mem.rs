@@ -11,7 +11,7 @@
 
 #[cfg(feature = "paging")]
 use crate::paging::pte_query;
-use ruxhal::mem::{direct_virt_to_phys, AddressTranslate, PhysAddr, VirtAddr};
+use ruxhal::mem::{AddressTranslate, VirtAddr};
 
 struct AddressTranslateImpl;
 

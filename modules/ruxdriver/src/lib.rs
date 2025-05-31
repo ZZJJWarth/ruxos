@@ -25,8 +25,8 @@
 //! This crate supports two device models depending on the `dyn` feature:
 //!
 //! - **Static**: The type of all devices is static, it is determined at compile
-//!  time by corresponding cargo features. For example, [`AxNetDevice`] will be
-//! an alias of [`VirtioNetDev`] if the `virtio-net` feature is enabled. This
+//!   maktime by corresponding cargo features. For example, [`AxNetDevice`] will be
+//!   an alias of [`VirtioNetDev`] if the `virtio-net` feature is enabled. This
 //! model provides the best performance as it avoids dynamic dispatch. But on
 //! limitation, only one device instance is supported for each device category.
 //! - **Dynamic**: All device instance is using [trait objects] and wrapped in a
