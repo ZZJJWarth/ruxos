@@ -5,7 +5,7 @@ use crate::{
 };
 use alloc::{boxed::Box, collections::VecDeque, sync::Arc};
 #[cfg(feature = "irq")]
-use axdriver::register_interrupt_handler;
+use ruxdriver::register_interrupt_handler;
 use axsync::Mutex;
 use core::{cell::RefCell, ffi::c_void};
 use driver_net::{DevError, NetBuf, NetBufBox};

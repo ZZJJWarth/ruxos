@@ -155,7 +155,7 @@ pub unsafe fn sys_select(
                 return Ok(res);
             }
 
-            if deadline.map_or(false, |ddl| current_time() >= ddl) {
+            if deadline.is_some_and(|ddl| current_time() >= ddl) {
                 debug!("    timeout!");
                 return Ok(0);
             }
@@ -182,7 +182,7 @@ pub unsafe fn sys_pselect6(
 unsafe fn zero_fd_set(fds: *mut ctypes::fd_set, nfds: usize) {
     if !fds.is_null() {
         let nfds_usizes = nfds.div_ceil(BITS_PER_USIZE);
-        let dst = &mut (*fds).fds_bits[..nfds_usizes];
+        let dst = &mut (&mut (*fds).fds_bits)[..nfds_usizes];
         dst.fill(0);
     }
 }

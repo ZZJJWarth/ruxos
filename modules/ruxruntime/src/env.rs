@@ -8,11 +8,12 @@
  */
 
 // TODO: rewrite this file and remove this allowance
-#[allow(static_mut_refs)]
+#![allow(static_mut_refs)]
+
 extern crate alloc;
 use alloc::vec::Vec;
 use core::ffi::c_char;
-use core::{ptr, usize};
+use core::ptr;
 use ruxhal::mem::PAGE_SIZE_4K;
 
 pub const AT_PAGESIZE: usize = 6;

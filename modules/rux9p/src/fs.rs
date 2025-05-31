@@ -231,7 +231,7 @@ impl CommonNode {
                     "9pfs mkdir failed! error code: {}"
                 );
                 handle_result!(
-                    self.inner.write().twalk(*self.fid, fid, 1, &[&name]),
+                    self.inner.write().twalk(*self.fid, fid, 1, &[name]),
                     "9pfs twalk failed! error code: {}"
                 );
             }
