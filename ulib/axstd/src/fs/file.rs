@@ -32,8 +32,8 @@ pub struct Metadata(api::AxFileAttr);
 pub struct OpenOptions(api::AxOpenOptions);
 
 impl Default for OpenOptions {
-     fn default() -> Self {
-         Self::new()
+    fn default() -> Self {
+        Self::new()
     }
 }
 

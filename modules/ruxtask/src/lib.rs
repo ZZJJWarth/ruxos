@@ -55,7 +55,8 @@ cfg_if::cfg_if! {
         pub mod signal;
         #[cfg(feature = "paging")]
         pub mod vma;
-        #[cfg(feature = "fs")]
+        // TODO: make fs module optional
+        // #[cfg(feature = "fs")]
         pub mod fs;
         #[cfg(feature = "irq")]
         /// load average

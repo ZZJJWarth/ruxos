@@ -136,7 +136,6 @@ pub type LinuxResult<T = ()> = Result<T, LinuxError>;
 ///     AxError::BadAddress,
 /// );
 /// ```
-
 #[macro_export]
 macro_rules! ax_err_type {
     ($err: ident) => {{

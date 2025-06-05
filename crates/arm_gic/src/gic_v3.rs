@@ -359,21 +359,20 @@ impl GicDistributor {
     ///
     /// This function should be called only once.
     pub fn init(&mut self) {
-        let val: u32;
         let mut irq_number: usize;
 
         // Disable the distributor
         //self.disable_dist();
 
         // Get GIC redistributor interface
-        val = self.regs().TYPER.get();
+        let val: u32 = self.regs().TYPER.get();
         irq_number = ((((val) & 0x1f) + 1) << 5) as usize;
         if irq_number > GIC_MAX_IRQ {
             irq_number = GIC_MAX_IRQ + 1;
         }
 
         // Configure all SPIs as non-secure Group 1
-        for i in (SPI_RANGE.start..irq_number).step_by(32 as usize) {
+        for i in (SPI_RANGE.start..irq_number).step_by(32_usize) {
             self.regs().IGROUPR[i / 32].set(0xffffffff);
         }
 
@@ -390,17 +389,17 @@ impl GicDistributor {
         }
 
         // Set all SPI's interrupt type to be level-sensitive
-        for i in (SPI_RANGE.start..irq_number).step_by(16 as usize) {
+        for i in (SPI_RANGE.start..irq_number).step_by(16_usize) {
             self.regs().ICFGR[i / 16].set(0);
         }
 
         // Set all SPI's priority to a default value
-        for i in (SPI_RANGE.start..irq_number).step_by(4 as usize) {
+        for i in (SPI_RANGE.start..irq_number).step_by(4_usize) {
             self.regs().IPRIORITYR[i / 4].set(0x80808080);
         }
 
         // Deactivate and disable all SPIs
-        for i in (SPI_RANGE.start..irq_number).step_by(32 as usize) {
+        for i in (SPI_RANGE.start..irq_number).step_by(32_usize) {
             self.regs().ICACTIVER[i / 32].set(0xffffffff);
             self.regs().ICENABLER[i / 32].set(0xffffffff);
         }

@@ -118,7 +118,7 @@ impl Signal {
                 };
 
                 match current_signal_if.signal.compare_exchange_weak(
-                   old,
+                    old,
                     new,
                     Ordering::AcqRel,
                     Ordering::Acquire,

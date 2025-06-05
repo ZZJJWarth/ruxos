@@ -61,9 +61,9 @@ pub struct Builder {
 }
 
 impl Default for Builder {
-     fn default() -> Self {
-         Self::new()
-     }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Builder {
